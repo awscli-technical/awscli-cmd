@@ -1,0 +1,230 @@
+■リソース検索
+
+アカウントにどのようなリソースが存在するかを検索したいならば、リソース検索を実行します。
+コンソール画面を開くとまずはリソース検索画面が表示されるため、そこから必要なリソースを検索しましょう。
+
+基本的には画像のとおりリソースが一覧で表示されます。
+ここにリソースの種類や名称、リージョンなどでの絞り込みを組み合わせることで、どのようなリソースが存在しているかを確認可能です。
+
+
+■ビューの作成と閲覧
+
+毎回、同じ検索条件を利用するならばビューを作成しておくことで適用の手間が省けます。
+
+左カラムのメニューから「ビュー」をクリックし、［ビューの作成］をクリックします。
+
+例えば、東京リージョンだけを検索するビューを作成する場合は以下のとおり設定して、［ビューの作成］をクリックします。
+
+
+ビューのメニューからはビューの設定が行えるようです。試しにビューを作成してみます。
+
+任意の名前がつけられ、またリソースフィルタもあらかじめ設定しておけるみたいです。
+
+今回は service:ec2* region:ap-northeast-1 という条件で、東京リージョンに存在する全てのEC2関連リソースでフィルターしてみました。
+
+ビューを作成し、検索画面にて作成したビューを使用したところしっかりと絞りこまれていました。
+
+
+AWS Organizations環境下のAWSリソース一覧化が楽ちんになりました。
+
+マルチアカウント管理ではAWSリソースの管理が大変です。 
+各メンバーアカウント上でどんなリソースがあるのか、把握が難しいです。
+
+従来はアカウント横断でリソースを検索する手段としては Configアグリゲーターがありました。 
+各AWSアカウントの 「Configによる構成情報」および 「Configルールによる評価結果」を集約できます。
+
+もちろんこれ(Configアグリゲーター)を使えばよかったのですが、 代わりに Resource Explorer を使って、より楽ちんに見られる手段もできましたよ といったアップデートになります。
+
+なお、Resource Explorer および 今回のマルチアカウント機能は 追加料金無しで利用できます 。
+
+	• 楽ちんにマルチアカウント環境下のリソースを一覧化したい → AWS Resource Explorer
+	• 細かい設定項目まで詳細に棚卸ししたい → Configアグリゲーター
+
+さっそく、マルチアカウント Resource Explorer を体験します。
+
+AWS Resource Explorer の設定ページから [組織で Resource Explorer を設定] を選択します。
+
+
+
+簡単なところでリージョンで絞り込んでみます。
+
+aws resource-explorer-2 search --query-string 'region:ap-northeast-1'
+
+
+-queryで必要な情報だけに絞ってみます。
+
+aws resource-explorer-2 search \
+    --query-string 'region:ap-northeast-1' \
+    --query 'Resources[].{"Service": Service, "ResourceType": ResourceType, "Region": Region, "Arn": Arn}' --output table
+
+
+東京リージョンのサービス EC2で絞り込んでみましょう。
+
+aws resource-explorer-2 search \
+    --query-string 'region:ap-northeast-1 service:ec2' \
+    --query 'Resources[].{"Service": Service, "ResourceType": ResourceType, "Region": Region, "Arn": Arn}' --output table
+
+まとめ
+料金の確認もそうですが、簡単に情報が取れると確認が捗ります。面倒だと確認しなくなってしまうんですよね、あまりよくないことですが…。
+毎朝リソース一覧を確認することで、無駄なリソースに課金することもなくなります。ぜひ、リソースの確認を習慣づけてみてください。
+
+
+Resource Explorer：ec2 describe-instancesの代替となるか
+
+
+「aws esource-explorer-2 search」は「aws ec2 describe-instances」の代替となるか？
+
+「aws esource-explorer-2 search」でわかる情報はどのアカウントにリソースがありどういったタグ付けがされているかといった情報になります。
+各リソースの詳細な属性値は「aws ec2 describe-instances」でなければ確認できませんでした。
+
+
+$ aws resource-explorer-2 search \
+>     --query-string 'region:ap-northeast-1 resourcetype:ec2:instance' --output yaml
+Count:
+  Complete: true
+  TotalResources: 1
+Resources:
+- Arn: arn:aws:ec2:ap-northeast-1:970432771706:instance/i-0fea3d4b705df53da
+  LastReportedAt: '2024-02-16T08:03:24+00:00'
+  OwningAccountId: '970432771706'
+  Properties:
+  - Data:
+    - Key: Name
+      Value: kkc-alpha-dev-ec2-config-ubuntu2004
+    - Key: aws:cloudformation:stack-name
+      Value: CFn-root-01-parent-stack-EC2InstanceConfigUbuntu2004Stack-17R6GYHN8PDT3
+    - Key: aws:cloudformation:stack-id
+      Value: arn:aws:cloudformation:ap-northeast-1:970432771706:stack/CFn-root-01-parent-stack-EC2InstanceConfigUbuntu2004Stack-17R6GYHN8PDT3/d8a0ec90-cca1-11ee-a7f5-0a87bbf0ee63
+    - Key: aws:cloudformation:logical-id
+      Value: EC2InstanceConfigUbuntu2004
+    LastReportedAt: '2024-02-16T08:03:24+00:00'
+    Name: tags
+  Region: ap-northeast-1
+  ResourceType: ec2:instance
+  Service: ec2
+ViewArn: arn:aws:resource-explorer-2:ap-northeast-1:970432771706:view/all-resources/0cc895f5-f7fc-4b91-9c1f-c2169493c7e6
+
+
+$ aws ec2 describe-instances --instance-ids "i-0fea3d4b705df53da" --output yaml
+Reservations:
+- Groups: []
+  Instances:
+  - AmiLaunchIndex: 0
+    Architecture: x86_64
+    BlockDeviceMappings:
+    - DeviceName: /dev/sda1
+      Ebs:
+        AttachTime: '2024-02-16T08:03:24+00:00'
+        DeleteOnTermination: true
+        Status: attached
+        VolumeId: vol-0c81c634da5d9a994
+    - DeviceName: /dev/xvda
+      Ebs:
+        AttachTime: '2024-02-16T08:03:24+00:00'
+        DeleteOnTermination: true
+        Status: attached
+        VolumeId: vol-08ce0630030592279
+    CapacityReservationSpecification:
+      CapacityReservationPreference: open
+    ClientToken: CFn-r-EC2In-UIM9HMVDZG3O
+    CpuOptions:
+      CoreCount: 1
+      ThreadsPerCore: 1
+    CurrentInstanceBootMode: legacy-bios
+    EbsOptimized: false
+    EnaSupport: true
+    EnclaveOptions:
+      Enabled: false
+    HibernationOptions:
+      Configured: false
+    Hypervisor: xen
+    IamInstanceProfile:
+      Arn: arn:aws:iam::970432771706:instance-profile/kkc-alpha-dev-role-ec2
+      Id: AIPA6D4SM6Z5MGTTIZH2R
+    ImageId: ami-02dfe66b1d9591ac1
+    InstanceId: i-0fea3d4b705df53da
+    InstanceType: t2.micro
+    KeyName: kkc-alpha-dev-key
+    LaunchTime: '2024-02-16T08:03:23+00:00'
+    MaintenanceOptions:
+      AutoRecovery: default
+    MetadataOptions:
+      HttpEndpoint: enabled
+      HttpProtocolIpv6: disabled
+      HttpPutResponseHopLimit: 1
+      HttpTokens: optional
+      InstanceMetadataTags: disabled
+      State: applied
+    Monitoring:
+      State: disabled
+    NetworkInterfaces:
+    - Attachment:
+        AttachTime: '2024-02-16T08:03:23+00:00'
+        AttachmentId: eni-attach-08451813fdf97a5fe
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        NetworkCardIndex: 0
+        Status: attached
+      Description: ''
+      Groups:
+      - GroupId: sg-047eaceed5520c74d
+        GroupName: kkc-alpha-dev-sg-ec2
+      InterfaceType: interface
+      Ipv6Addresses: []
+      MacAddress: 06:5f:32:4a:53:b1
+      NetworkInterfaceId: eni-083a144cbff7c7fec
+      OwnerId: '970432771706'
+      PrivateIpAddress: 10.10.0.102
+      PrivateIpAddresses:
+      - Primary: true
+        PrivateIpAddress: 10.10.0.102
+      SourceDestCheck: true
+      Status: in-use
+      SubnetId: subnet-0996a48573cbb3b9b
+      VpcId: vpc-0c918a812ff663fd9
+    Placement:
+      AvailabilityZone: ap-northeast-1a
+      GroupName: ''
+      Tenancy: default
+    PlatformDetails: Linux/UNIX
+    PrivateDnsName: ip-10-10-0-102.ap-northeast-1.compute.internal
+    PrivateDnsNameOptions:
+      EnableResourceNameDnsAAAARecord: false
+      EnableResourceNameDnsARecord: false
+      HostnameType: ip-name
+    PrivateIpAddress: 10.10.0.102
+    ProductCodes: []
+    PublicDnsName: ''
+    RootDeviceName: /dev/sda1
+    RootDeviceType: ebs
+    SecurityGroups:
+    - GroupId: sg-047eaceed5520c74d
+      GroupName: kkc-alpha-dev-sg-ec2
+    SourceDestCheck: true
+    State:
+      Code: 80
+      Name: stopped
+    StateReason:
+      Code: Client.UserInitiatedShutdown
+      Message: 'Client.UserInitiatedShutdown: User initiated shutdown'
+    StateTransitionReason: User initiated (2024-02-16 08:07:51 GMT)
+    SubnetId: subnet-0996a48573cbb3b9b
+    Tags:
+    - Key: aws:cloudformation:logical-id
+      Value: EC2InstanceConfigUbuntu2004
+    - Key: aws:cloudformation:stack-id
+      Value: arn:aws:cloudformation:ap-northeast-1:970432771706:stack/CFn-root-01-parent-stack-EC2InstanceConfigUbuntu2004Stack-17R6GYHN8PDT3/d8a0ec90-cca1-11ee-a7f5-0a87bbf0ee63
+    - Key: aws:cloudformation:stack-name
+      Value: CFn-root-01-parent-stack-EC2InstanceConfigUbuntu2004Stack-17R6GYHN8PDT3
+    - Key: Name
+      Value: kkc-alpha-dev-ec2-config-ubuntu2004
+    UsageOperation: RunInstances
+    UsageOperationUpdateTime: '2024-02-16T08:03:23+00:00'
+    VirtualizationType: hvm
+    VpcId: vpc-0c918a812ff663fd9
+  OwnerId: '970432771706'
+  RequesterId: '331753876576'
+  ReservationId: r-00c5b6dab2f407bba
+
+
+
