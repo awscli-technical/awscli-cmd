@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+    Env:
+        Description: "Environment of system"
+        Type: String
+
+    System:
+        Description: "Name of system"
+        Type: String
+
+    SystemPrefix:
+        Description: "Prefix of system"
+        Type: String
+
+    VpcId:
+        Description: "ID of VPC"
+        Type: String
+
+    VpcCidr:
+        Description: "CIDR of VPC"
+        Type: String
+
+    SubnetId:
+        Description: "ID of Subnet"
+        Type: String
+
+Resources:
+# ------------------------------------------------------------#
+# SecurityGroup
+# ------------------------------------------------------------#
+    BetaEC2SecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: !Sub ${SystemPrefix}-${Env}-sg-ec2
+            GroupName: !Sub ${SystemPrefix}-${Env}-sg-ec2
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-sg-ec2
+            VpcId: !Ref VpcId
+            SecurityGroupIngress: 
+              -
+                CidrIp: 14.8.27.129/32
+                FromPort: -1
+                IpProtocol: "icmp"
+                ToPort: -1
+              -
+                CidrIp: 14.8.27.129/32
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+              -
+                CidrIp: 14.8.27.129/32
+                FromPort: 3389
+                IpProtocol: "tcp"
+                ToPort: 3389
+              -
+                CidrIp: 14.8.27.129/32
+                FromPort: 80
+                IpProtocol: "tcp"
+                ToPort: 80
+              - 
+                CidrIp: !Ref VpcCidr
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+    ExportBetaEC2SecurityGroup:
+        Value: !Ref BetaEC2SecurityGroup
+        Export:
+            Name: ExportBetaEC2SecurityGroup

@@ -1,0 +1,38 @@
+[
+   {
+        "ParameterKey": "Env",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "System",
+        "ParameterValue": "beta"
+    },
+    {
+        "ParameterKey": "SystemPrefix",
+        "ParameterValue": "beta"
+    },
+    {
+        "ParameterKey": "VpcId",
+        "ParameterValue": "vpc-09efd3b325fa02d60"
+    },
+    {
+        "ParameterKey": "VpcCidr",
+        "ParameterValue": "10.10.0.0/16"
+    },
+    {
+        "ParameterKey": "SubnetId",
+        "ParameterValue": "subnet-0b11e7b82f5da9ab2"
+    },
+    {
+        "ParameterKey": "InstanceId01",
+        "ParameterValue": "i-09494e84fc42b87cb"
+    },
+    {
+        "ParameterKey": "InstanceId02",
+        "ParameterValue": "i-04306f49292466754"
+    },
+    {
+        "ParameterKey": "InstanceId03",
+        "ParameterValue": "i-0b1dcdee14064573c"
+    }
+]

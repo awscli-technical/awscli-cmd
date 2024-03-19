@@ -1,0 +1,30 @@
+[
+   {
+        "ParameterKey": "Env",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "System",
+        "ParameterValue": "beta"
+    },
+    {
+        "ParameterKey": "SystemPrefix",
+        "ParameterValue": "beta"
+    },
+    {
+        "ParameterKey": "VpcId",
+        "ParameterValue": "vpc-09efd3b325fa02d60"
+    },
+    {
+        "ParameterKey": "VpcCidr",
+        "ParameterValue": "10.10.0.0/16"
+    },
+    {
+        "ParameterKey": "SubnetId",
+        "ParameterValue": "subnet-0b11e7b82f5da9ab2"
+    },
+    {
+        "ParameterKey": "PrivateIPAddress",
+        "ParameterValue": "10.10.12.49"
+    }
+]

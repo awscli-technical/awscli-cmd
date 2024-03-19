@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+    Env:
+        Description: "Environment of system"
+        Type: String
+
+    System:
+        Description: "Name of system"
+        Type: String
+
+    SystemPrefix:
+        Description: "Prefix of system"
+        Type: String
+
+    VpcId:
+        Description: "ID of VPC"
+        Type: String
+
+    VpcCidr:
+        Description: "CIDR of VPC"
+        Type: String
+
+    SubnetId:
+        Description: "ID of Subnet"
+        Type: String
+
+# ------------------------------------------------------------#
+    PrivateIPAddress:
+        Description: "Private IP address of instance"
+        Type: String
+
+# ------------------------------------------------------------#
+# SSM Parameter
+# ------------------------------------------------------------#
+    ImageIdAmazonLinux2023:
+        Description: "Image of instance(Latest of Amazon Linux 2023)"
+        Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+        Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+
+Resources:
+# ------------------------------------------------------------#
+# EC2 Instance (CDK)
+# ------------------------------------------------------------#
+    BetaEC2InstanceCdk:
+        Type: "AWS::EC2::Instance"
+        DeletionPolicy: Delete
+        Properties:
+            ImageId: !Ref ImageIdAmazonLinux2023
+            InstanceType: "t2.micro"
+            KeyName: !ImportValue ExportBetaEC2KeyPair
+            AvailabilityZone: !Sub "${AWS::Region}a"
+            Tenancy: "default"
+            NetworkInterfaces:
+              - AssociatePublicIpAddress: "true"
+                DeviceIndex: "0"
+                SubnetId: !Ref SubnetId
+                GroupSet:
+                 - !ImportValue ExportBetaEC2SecurityGroup
+                PrivateIpAddress: !Ref PrivateIPAddress
+            EbsOptimized: false
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/xvda"
+                Ebs: 
+                    Encrypted: false
+                    VolumeSize: 8
+                    VolumeType: "gp2"
+                    DeleteOnTermination: true
+            IamInstanceProfile: !ImportValue ExportBetaIAMInstanceProfile
+            Tags: 
+              - 
+                Key: "System"
+                Value: !Ref System
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-ec2-linux-cdk
+            HibernationOptions: 
+                Configured: false
+            EnclaveOptions: 
+                Enabled: false
+            UserData: 
+                Fn::Base64: |
+                    #!/bin/bash
+                    ## SSM Agent
+                    dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+                    systemctl start amazon-ssm-agent
+                    systemctl enable amazon-ssm-agent
+                    ## Add CDK user
+                    MK_USER="cdk"
+                    MK_GROUP="cdk"
+                    MK_USER_ID="2001"
+                    MK_GROUP_ID="2001"
+                    sudo groupadd -g ${MK_GROUP_ID} ${MK_GROUP}
+                    sudo useradd -s /usr/bin/bash -u ${MK_USER_ID} -g ${MK_GROUP} -m -d /home/${MK_USER} ${MK_USER}
+                    sudo echo ${MK_USER} | passwd --stdin ${MK_USER}
+                    sudo usermod -aG wheel ${MK_USER}
+                    sudo echo "${MK_USER} ALL=NOPASSWD: ALL" >>/etc/sudoers
+                    sudo usermod -aG wheel cdk
+                    sudo echo 'cdk ALL=NOPASSWD: ALL' >>/etc/sudoers
+                    ## nvm
+                    sudo su - cdk -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash"
+                    sudo su - cdk -c ". ~/.nvm/nvm.sh"
+                    ## Node.js
+                    sudo su - cdk -c "nvm install v18.19.1"
+                    ## CDK
+                    sudo su - cdk -c "npm install -g aws-cdk"
+                    ## TypeScript
+                    sudo su - cdk -c "npm install -g typescript"
+                    ## Tools
+                    sudo dnf -y install tree jq git
+                    ## Time zone
+                    sudo timedatectl set-timezone Asia/Tokyo
+                    ## locale
+                    sudo localectl set-locale LANG=ja_JP.UTF-8
+                    ## /etc/bashrc
+                    sudo cp -p /etc/bashrc /etc/bashrc.org
+                    sudo cat <<'EOF' >>/etc/bashrc
+                    alias ls='ls -aF'
+                    alias vi='vim -u NONE -N'
+                    alias ..='cd ..'
+                    alias c='clear'
+                    set -o vi
+                    export PS1="[\u@\h \t \w]\\$ "
+                    EOF
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+    ExportBetaEC2InstanceCdk:
+        Value: !Ref BetaEC2InstanceCdk
+        Export:
+            Name: ExportBetaEC2InstanceCdk

@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+    Env:
+        Description: "Environment of system"
+        Type: String
+
+    System:
+        Description: "Name of system"
+        Type: String
+
+    SystemPrefix:
+        Description: "Prefix of system"
+        Type: String
+
+    VpcId:
+        Description: "ID of VPC"
+        Type: String
+
+    VpcCidr:
+        Description: "CIDR of VPC"
+        Type: String
+
+    SubnetId:
+        Description: "ID of Subnet"
+        Type: String
+
+Resources:
+# ------------------------------------------------------------#
+# EC2 KeyPair
+# ------------------------------------------------------------#
+    BetaEC2KeyPair:
+        Type: "AWS::EC2::KeyPair"
+        Properties:
+            KeyName: !Sub ${SystemPrefix}-${Env}-key
+            KeyType: "rsa"
+            Tags: 
+              - 
+                Key: "System"
+                Value: !Ref System
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-key
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+    ExportBetaEC2KeyPair:
+        Value: !Ref BetaEC2KeyPair
+        Export:
+            Name: ExportBetaEC2KeyPair

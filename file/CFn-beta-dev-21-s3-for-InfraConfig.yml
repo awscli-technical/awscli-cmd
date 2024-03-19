@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+    Env:
+        Description: "Environment of system"
+        Type: String
+
+    System:
+        Description: "Name of system"
+        Type: String
+
+    SystemPrefix:
+        Description: "Prefix of system"
+        Type: String
+
+    VpcId:
+        Description: "ID of VPC"
+        Type: String
+
+    VpcCidr:
+        Description: "CIDR of VPC"
+        Type: String
+
+    SubnetId:
+        Description: "ID of Subnet"
+        Type: String
+
+Resources:
+# ------------------------------------------------------------#
+# S3 Bucket
+# ------------------------------------------------------------#
+    BetaS3Bucket:
+        Type: "AWS::S3::Bucket"
+        Properties:
+            BucketName: !Sub ${SystemPrefix}-${Env}-s3-bucket-${AWS::AccountId}
+            Tags: 
+              - 
+                Key: "System"
+                Value: !Ref System
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-s3-bucket-${AWS::AccountId}
+            VersioningConfiguration: 
+                Status: "Enabled"
+
+# ------------------------------------------------------------#
+# Outputs
+# ------------------------------------------------------------#
+Outputs:
+    ExportBetaS3BucketArn:
+        Value: !GetAtt BetaS3Bucket.Arn
+        Export:
+            Name: ExportBetaS3BucketArn

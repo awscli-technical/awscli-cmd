@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# ------------------------------------------------------------#
+# Parameters
+# ------------------------------------------------------------#
+Parameters:
+    Env:
+        Description: "Environment of system"
+        Type: String
+
+    System:
+        Description: "Name of system"
+        Type: String
+
+    SystemPrefix:
+        Description: "Prefix of system"
+        Type: String
+
+    VpcId:
+        Description: "ID of VPC"
+        Type: String
+
+    VpcCidr:
+        Description: "CIDR of VPC"
+        Type: String
+
+    SubnetId:
+        Description: "ID of Subnet"
+        Type: String
+
+Resources:
+# ------------------------------------------------------------#
+# Role
+# ------------------------------------------------------------#
+    BetaEC2IAMRole:
+        Type: "AWS::IAM::Role"
+        Properties:
+            Path: "/"
+            RoleName: !Sub ${SystemPrefix}-${Env}-iam-role-ec2
+            AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+            MaxSessionDuration: 3600
+            ManagedPolicyArns: 
+              - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+              - "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess"
+              - "arn:aws:iam::aws:policy/AmazonS3FullAccess" 
+            Tags: 
+              - 
+                Key: "System"
+                Value: !Sub ${System}
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-iam-role-ec2
+
+    BetaEventBridgeIAMRole:
+        Type: "AWS::IAM::Role"
+        Properties:
+            Path: "/"
+            RoleName: !Sub ${SystemPrefix}-${Env}-iam-role-eventbridge
+            AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"scheduler.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+            MaxSessionDuration: 3600
+            ManagedPolicyArns: 
+              - "arn:aws:iam::aws:policy/service-role/CloudWatchEventsInvocationAccess"
+              - "arn:aws:iam::aws:policy/service-role/CloudWatchEventsBuiltInTargetExecutionAccess"
+              - "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+            Tags: 
+              - 
+                Key: "System"
+                Value: !Sub ${System}
+              - 
+                Key: "Name"
+                Value: !Sub ${SystemPrefix}-${Env}-iam-role-eventbridge
+
+# ------------------------------------------------------------#
+# InstanceProfile
+# ------------------------------------------------------------#
+    BetaIAMInstanceProfile:
+        Type: "AWS::IAM::InstanceProfile"
+        Properties:
+            Path: "/"
+            InstanceProfileName: !Ref BetaEC2IAMRole
+            Roles: 
+              - !Ref BetaEC2IAMRole
+
+# ------------------------------------------------------------#
+# Output Parameters
+# ------------------------------------------------------------#
+Outputs:
+    ExportBetaIAMInstanceProfile:
+        Value: !Ref BetaIAMInstanceProfile
+        Export:
+            Name: ExportBetaIAMInstanceProfile
+    ExportBetaEventBridgeIAMRoleArn:
+        Value: !GetAtt BetaEventBridgeIAMRole.Arn
+        Export:
+            Name: ExportBetaEventBridgeIAMRoleArn
