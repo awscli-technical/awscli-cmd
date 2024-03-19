@@ -1,0 +1,125 @@
+■修正事項
+
+・パブリックIPアドレス削除（EC2インスタンス）
+・EC2インスタンスのプライベートIP指定なし（EC2インスタンス）
+・セキュリティグループの端末IP削除（セキュリティグループ）
+
+
+■環境
+
+iac@vmnet3guest151
+
+
+■作業ディレクトリ移動及びAWS認証
+
+cd /home/iac/work/git/iac151/beta/cloudformation/infra_config
+aws-vault exec aws07 --duration 12h
+
+
+■AWSリソース作成及び更新
+
+▼IAMロール
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-01-iam-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-01-iam-for-InfraConfig \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --parameter-overrides "file://parameters-common.json"
+
+▼セキュリティグループ
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-02-sg-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-02-sg-for-InfraConfig \
+    --parameter-overrides "file://parameters-common.json"
+
+▼キーペア
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-03-keypair-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-03-keypair-for-InfraConfig \
+    --parameter-overrides "file://parameters-common.json"
+
+▼EC2インスタンス（AmazonLinux2023）
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-04-ec2-linux-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-04-ec2-linux-for-InfraConfig \
+    --parameter-overrides "file://parameters-04-ec2-cdk-for-InfraConfig.json"
+
+▼EC2インスタンス（AmazonLinux2023 CDK）
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-05-ec2-linux-cdk-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-05-ec2-linux-cdk-for-InfraConfig \
+    --parameter-overrides "file://parameters-05-ec2-linux-cdk-for-InfraConfig.json"
+
+▼EC2インスタンス（WindowsServer2022）
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-06-ec2-windows-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-06-ec2-windows-for-InfraConfig \
+    --parameter-overrides "file://parameters-06-ec2-windows-for-InfraConfig.json"
+
+▼EC2インスタンスID確認してEventBridge（EC2インスタンス停止）用パラメータ変更
+aws ec2 describe-instances \
+    --region=ap-northeast-1 \
+    --output=table \
+    --query 'Reservations[].Instances[].{
+        a_TagName:Tags[?Key==`Name`].Value|[0],
+        b_InstanceId:InstanceId,
+        c_State:State.Name
+    }'
+
+▼EventBridge（定時EC2インスタンス停止）
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-11-eventbridge-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-11-eventbridge-for-InfraConfig \
+    --parameter-overrides "file://parameters-11-eventbridge-for-InfraConfig.json"
+
+▼S3バケット
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-21-s3-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-21-s3-for-InfraConfig \
+    --parameter-overrides "file://parameters-common.json"
+
+▼CodeCommitリポジトリ
+aws cloudformation deploy \
+    --template-file CFn-beta-dev-22-codecommit-for-InfraConfig.yml \
+    --stack-name CFn-beta-dev-22-codecommit-for-InfraConfig \
+    --parameter-overrides "file://parameters-common.json"
+
+
+■AWSリソース削除
+
+▼CodeCommitリポジトリ
+aws cloudformation delete-stack --stack-name CFn-beta-dev-22-codecommit-for-InfraConfig
+
+▼S3バケット
+aws cloudformation delete-stack --stack-name CFn-beta-dev-21-s3-for-InfraConfig
+
+▼EventBridge
+aws cloudformation delete-stack --stack-name CFn-beta-dev-11-eventbridge-for-InfraConfig
+
+▼EC2インスタンス
+aws cloudformation delete-stack --stack-name CFn-beta-dev-06-ec2-windows-for-InfraConfig
+aws cloudformation delete-stack --stack-name CFn-beta-dev-05-ec2-linux-cdk-for-InfraConfig
+aws cloudformation delete-stack --stack-name CFn-beta-dev-04-ec2-linux-for-InfraConfig
+
+▼キーペア
+aws cloudformation delete-stack --stack-name CFn-beta-dev-03-keypair-for-InfraConfig
+
+▼セキュリティグループ
+aws cloudformation delete-stack --stack-name CFn-beta-dev-02-sg-for-InfraConfig
+
+▼IAMロール
+aws cloudformation delete-stack --stack-name CFn-beta-dev-01-iam-for-InfraConfig
+
+
+■S3バケット接続
+
+[ec2-user@ip-10-10-12-49 23:33:33 ~]$ aws s3 ls
+2024-03-18 22:55:05 beta-dev-s3-bucket-975050382978
+2024-03-05 08:20:48 cdk-hnb659fds-assets-975050382978-ap-northeast-1
+2024-03-07 09:28:00 cf-templates-1k3v2ok4joz29-ap-northeast-1
+2024-02-22 07:37:08 omega-dev-config-bucket-975050382978
+2024-02-20 19:28:27 omega-dev-s3-bucket-cfn-00-975050382978
+2024-03-18 13:33:24 omega-dev-s3-bucket-config-aggregator-975050382978
+2024-03-13 20:53:31 sigma-dev-s3-bucket-tfstate-975050382978
+
+
+■CodeCommitリポジトリ接続
