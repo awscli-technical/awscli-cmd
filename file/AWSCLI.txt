@@ -1,0 +1,1 @@
+aws iam get-account-authorization-details --filter Role --query 'RoleDetailList[?RoleName==`test-iam-role-lambda-ec2`]'
