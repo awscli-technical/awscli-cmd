@@ -1,0 +1,127 @@
+■FTPユーザアカウント作成
+
+tee make_ftp_user.sh <<'EOF' >/dev/null
+while read USER_NAME GROUP_NAME USER_ID GROUP_ID PASSWD; do
+
+    echo USER_NAME GROUP_NAME USER_ID GROUP_ID PASSWD : ${USER_NAME} ${GROUP_NAME} ${USER_ID} ${GROUP_ID} ${PASSWD}
+
+    sudo cat /etc/group |grep ${GROUP_NAME} > /dev/null 2>&1
+    RC=`echo $?`
+    if [ $RC -eq 1 ];then
+        sudo groupadd -g ${GROUP_ID} ${GROUP_NAME}
+        echo USER_NAME GROUP_NAME USER_ID GROUP_ID PASSWD : ${USER_NAME} ${GROUP_NAME} ${USER_ID} ${GROUP_ID} ${PASSWD}
+        echo "FTP用グループ(${GROUP_NAME})を作成しました"
+    else
+        echo "FTP用グループ(${GROUP_NAME})は存在します"
+    fi
+
+    sudo cat /etc/passwd |grep ${USER_NAME} > /dev/null 2>&1
+    RC=`echo $?`
+    if [ $RC -eq 1 ];then
+        sudo useradd -s /usr/bin/bash -u ${USER_ID} -g ${GROUP_NAME} -m -d /home/${USER_NAME} ${USER_NAME}
+        sudo echo ${PASSWD} | passwd --stdin ${USER_NAME}
+        sudo usermod -aG wheel ${USER_NAME}
+        sudo echo "${USER_NAME} ALL=NOPASSWD: ALL" >>/etc/sudoers
+        echo USER_NAME GROUP_NAME USER_ID GROUP_ID PASSWD : ${USER_NAME} ${GROUP_NAME} ${USER_ID} ${GROUP_ID} ${PASSWD}
+        echo "FTP用ユーザ(${USER_NAME})を作成しました"
+    else
+        echo "FTP用ユーザ(${USER_NAME})は存在します"
+    fi
+done <<EOL
+ftpuser00 ftpgroup00 4000 4000 Ba+3psrPvh
+ftpuser01 ftpgroup00 4001 4000 -bmA6K%z3Z
+ftpuser02 ftpgroup00 4002 4000 ja5exY4wkR
+ftpuser10 ftpgroup10 5000 5000 #pgQ35%et4
+ftpuser11 ftpgroup10 5001 5000 kcEJdJkfAc
+ftpuser12 ftpgroup10 5002 5000 8%2g=X2Wvd
+ftpuser20 ftpgroup20 6000 6000 Rr+=e45qpV
+ftpuser21 ftpgroup20 6001 6000 ehTimBtBgY
+ftpuser22 ftpgroup20 6002 6000 FDG9%CiAEP
+EOL
+EOF
+
+bash make_ftp_user.sh
+
+▼確認
+cat /etc/passwd
+cat /etc/group
+ls -l /home
+
+▼FTPユーザ削除
+▼FTPユーザグループ削除
+userdel -r ftpuser00
+userdel -r ftpuser01
+userdel -r ftpuser02
+userdel -r ftpuser10
+userdel -r ftpuser11
+userdel -r ftpuser12
+userdel -r ftpuser20
+userdel -r ftpuser21
+userdel -r ftpuser22
+
+groupdel ftpgroup00
+groupdel ftpgroup10
+groupdel ftpgroup20
+
+
+■FTPログインディレクトリ作成とFTPログイン設定
+
+tee make_ftpd_setting.sh <<'EOF' >/dev/null
+while read USER_NAME GROUP_NAME ; do
+
+    echo USER_NAME GROUP_NAME : ${USER_NAME} ${GROUP_NAME}
+
+    if [ -d /etc/vsftpd/vsftpd_user_conf ];then
+        echo "ディレクトリ(/etc/vsftpd/vsftpd_user_conf)は存在します"
+    else
+        echo "ディレクトリ(/etc/vsftpd/vsftpd_user_conf)は存在しないため作成します"
+        sudo mkdir -p /etc/vsftpd/vsftpd_user_conf
+    fi
+    
+    sudo cat /etc/vsftpd/vsftpd_user_conf/${USER_NAME} > /dev/null 2>&1
+    RC=`echo $?`
+    if [ $RC -eq 1 ];then
+        echo "FTPログインディレクトリ設定ファイル(/etc/vsftpd/vsftpd_user_conf/${USER_NAME})は存在しないため作成します"
+        echo "FTPログインディレクトリ(/efs-test/ftp/${GROUP_NAME}/${USER_NAME})は存在しないため作成します"
+        touch /etc/vsftpd/vsftpd_user_conf/${USER_NAME}
+        echo "local_root=/efs-test/ftp/${GROUP_NAME}/${USER_NAME}" >/etc/vsftpd/vsftpd_user_conf/${USER_NAME}
+        mkdir -p /efs-test/ftp/${GROUP_NAME}/${USER_NAME}
+        chown ${USER_NAME}:${GROUP_NAME} /efs-test/ftp/${GROUP_NAME}/${USER_NAME}
+        chmod 770 /efs-test/ftp/${GROUP_NAME}/${USER_NAME}
+    else
+        echo "FTPログインディレクトリ設定ファイル(/etc/vsftpd/vsftpd_user_conf/${USER_NAME})は存在します"
+        echo "FTPログインディレクトリ(/efs-test/ftp/${GROUP_NAME}/${USER_NAME})は存在します"
+    fi
+done <<EOL
+ftpuser00 ftpgroup00
+ftpuser01 ftpgroup00
+ftpuser02 ftpgroup00
+ftpuser10 ftpgroup10
+ftpuser11 ftpgroup10
+ftpuser12 ftpgroup10
+ftpuser20 ftpgroup20
+ftpuser21 ftpgroup20
+ftpuser22 ftpgroup20
+EOL
+EOF
+
+bash make_ftpd_setting.sh
+
+▼確認
+ls -l /etc/vsftpd/vsftpd_user_conf/
+cat /etc/vsftpd/vsftpd_user_conf/ftpuser00
+cat /etc/vsftpd/vsftpd_user_conf/ftpuser01
+cat /etc/vsftpd/vsftpd_user_conf/ftpuser02
+
+ls -l /efs-test/ftp/
+ls -l /efs-test/ftp/ftpgroup00/
+ls -l /efs-test/ftp/ftpgroup10/
+ls -l /efs-test/ftp/ftpgroup20/
+
+ls -laR /efs-test/ftp/ftpgroup00/
+ls -laR /efs-test/ftp/ftpgroup10/
+ls -laR /efs-test/ftp/ftpgroup20/
+
+▼削除
+rm -rf /etc/vsftpd/vsftpd_user_conf/*
+rm -rf /efs-test/ftp/*
