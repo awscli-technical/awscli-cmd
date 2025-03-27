@@ -1,6 +1,7 @@
 SELECT schemaname, tablename, tableowner
 FROM pg_tables
 WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';
+
 SELECT
   tablename,
   has_table_privilege('test_user_1_r', 'test_table_1', 'select') as select,
@@ -9,3 +10,11 @@ SELECT
   has_table_privilege('test_user_1_r', 'test_table_1', 'delete') as delete,
   has_table_privilege('test_user_1_r', 'test_table_1', 'references') as references
   FROM pg_tables where schemaname='test_schema' order by tablename;
+
+ANALYZE VERBOSE test_schema01.test_table01;
+
+export PGPASSWORD='postgres'
+psql -h localhost -p 5432 -d test_db01 -U postgres
+
+export PGPASSWORD='P@ssw0rd'
+psql -h localhost -p 5432 -d test_db01 -U test_user01_r
