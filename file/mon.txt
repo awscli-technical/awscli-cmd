@@ -1,0 +1,91 @@
+▼接続
+export PGPASSWORD='postgres'
+psql -h vmnet3guest200 -p 5432 -d test_db01 -U postgres
+
+▼テーブル情報
+SELECT schemaname, tablename, tableowner
+FROM pg_tables
+WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';
+-[ RECORD 1 ]-------------
+schemaname | test_schema01
+tablename  | test_table01
+tableowner | test_user01_r
+-[ RECORD 2 ]-------------
+schemaname | test_schema01
+tablename  | test_table02
+tableowner | test_user01_r
+
+▼インデックス情報
+SELECT tablename, indexname
+FROM pg_indexes
+WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';
+-[ RECORD 1 ]-----------
+tablename | test_table02
+indexname | idx_id01
+
+
+■不要レコード数確認
+\x
+SELECT * FROM pg_stat_user_tables WHERE relname = 'test_table02';
+-[ RECORD 1 ]-------+------------------------------
+relid               | 25433
+schemaname          | test_schema01
+relname             | test_table02
+seq_scan            | 3
+last_seq_scan       | 2025-03-29 08:25:57.293444+09
+seq_tup_read        | 500000
+idx_scan            | 2
+last_idx_scan       | 2025-03-29 08:23:51.802717+09
+idx_tup_fetch       | 0
+n_tup_ins           | 500000
+n_tup_upd           | 0
+n_tup_del           | 500000
+n_tup_hot_upd       | 0
+n_tup_newpage_upd   | 0
+n_live_tup          | 0
+n_dead_tup          | 0
+n_mod_since_analyze | 0
+n_ins_since_vacuum  | 0
+last_vacuum         | 2025-03-29 08:23:57.594452+09
+last_autovacuum     | 2025-03-29 08:17:25.126867+09
+last_analyze        | 2025-03-29 08:23:57.598221+09
+last_autoanalyze    | 2025-03-29 08:17:25.190202+09
+vacuum_count        | 2
+autovacuum_count    | 1
+analyze_count       | 2
+autoanalyze_count   | 1
+
+relid					テーブルのObject Identifier (OID)
+schemaname				テーブルが存在するスキーマの名前
+relname					テーブルの名前
+seq_scan				シーケンシャルスキャンの実行回数（累積値）
+last_seq_scan				最後にシーケンシャルスキャンが行われた時刻
+seq_tup_read				シーケンシャルスキャンでフェッチされたレコード数（累積値）
+idx_scan				インデックススキャンの実行回数（累積値）
+last_idx_scan				最後にインデックススキャンが行われた時刻
+idx_tup_fetch				インデックススキャンでフェッチされたレコード数（累積値）
+n_tup_ins				挿入されたレコード数（累積値）
+n_tup_upd				更新されたレコード数（累積値）
+n_tup_del				削除されたレコード数（累積値）
+n_tup_hot_upd				Heap-Only Tuple（HOT）更新されたレコード数（累積値）
+n_tup_newpage_upd			非HOT更新されたレコード数（累積値）
+n_live_tup				有効なレコード数（推定値）
+n_dead_tup				無効なレコード数（推定値）
+n_mod_since_analyze			最後にANALYZEが行われてから変更されたレコード数（推定値）
+n_ins_since_vacuum			最後にVACUUMが行われてから挿入されたレコード数（推定値）
+last_vacuum				最後に手動VACUUMが実行された時刻
+last_autovacuum				最後に自動VACUUMが実行された時刻
+last_analyze				最後に手動のANALYZEが実行された時刻
+last_autoanalyze			最後に自動ANALYZEが実行された時刻
+vacuum_count				手動VACUUMが実行された回数（累積値）
+autovacuum_count			自動VACUUMの対象となりVACUUMが実行された回数（累積値）
+analyze_count				手動でANALYZEが実行された回数（累積値）
+autoanalyze_count			自動ANALYZEがの対象となりANALYZEが実行された回数（累積値）
+
+
+■インデックス肥大化確認
+SELECT relname, relpages, reltuples FROM pg_class WHERE relname = 'idx_id01';
+-[ RECORD 1 ]-------
+relname   | idx_id01
+relpages  | 0
+reltuples | -1
