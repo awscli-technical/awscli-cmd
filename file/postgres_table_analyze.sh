@@ -144,11 +144,14 @@ export PGPASSWORD=${DB_PASSWORD}
 # 注意事項2
 # クエリを変数、配列に格納する場合は、''、""の囲いの扱いでクエリが正しく認識されない場合があります。
 # クエリ実行後にRCを取得する場合は、-c オプションにクエリを指定してください。
+
+# スキーマ名、テーブル名、テーブルオーナー、インデックス有無の表示
 echo "$(date +"%Y/%m/%d %H:%M:%S")" "[${HOST_NAME}] SELECT schemaname, tablename, tableowner FROM pg_tables WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';" 2>&1 | tee -a "${LOG}"
 psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} << EOL 2>&1 | tee -a "${LOG}"
   SELECT schemaname, tablename, tableowner, hasindexes FROM pg_tables WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';
 EOL
 
+# スキーマ名、テーブル名、インデックス名の表示
 echo "$(date +"%Y/%m/%d %H:%M:%S")" "[${HOST_NAME}] SELECT schemaname, tablename, indexname FROM pg_indexes WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';" 2>&1 | tee -a "${LOG}"
 psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} << EOL 2>&1 | tee -a "${LOG}"
   SELECT schemaname, tablename, indexname FROM pg_indexes WHERE schemaname NOT LIKE 'pg_%' AND schemaname != 'information_schema';
@@ -163,12 +166,19 @@ if [[ "${FUNC_RC}" != 0 ]]; then
     exit 1
 fi
 
-# クエリの実行
+# OID、インデックス名、インデックスページ数の表示
 echo "$(date +"%Y/%m/%d %H:%M:%S")" "[${HOST_NAME}] SELECT c.oid, c.relname AS index_name, c.relpages AS index_pages, n.nspname AS schema_name, c.relkind, c.reltablespace FROM pg_class c JOIN pg_namespace n ON c.relnamespace = n.oid WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname != 'information_schema';" 2>&1 | tee -a "${LOG}"
 psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} << EOL  2>&1 | tee -a "${LOG}"
   SELECT c.oid, c.relname AS index_name, c.relpages AS index_pages, n.nspname AS schema_name, c.relkind, c.reltablespace FROM pg_class c JOIN pg_namespace n ON c.relnamespace = n.oid WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname != 'information_schema';
 EOL
 
+# スキーマ名、テーブル名、インデックス名、インデックスサイズとインデックス見積もりサイズの表示
+echo "$(date +"%Y/%m/%d %H:%M:%S")" "[${HOST_NAME}] SELECT s.schemaname AS schema_name, s.relname AS table_name, c.relname AS index_name, pg_size_pretty(pg_relation_size(c.oid)) AS index_size, c.relpages AS total_pages, (c.relpages * 8192) AS estimated_size FROM pg_class c JOIN pg_stat_user_indexes s ON c.oid = s.indexrelid WHERE c.relname = 'idx_id01';" 2>&1 | tee -a "${LOG}"
+psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} << EOL  2>&1 | tee -a "${LOG}"
+  SELECT s.schemaname AS schema_name, s.relname AS table_name, c.relname AS index_name, pg_size_pretty(pg_relation_size(c.oid)) AS index_size, c.relpages AS total_pages, (c.relpages * 8192) AS estimated_size FROM pg_class c JOIN pg_stat_user_indexes s ON c.oid = s.indexrelid WHERE c.relname = 'idx_id01';
+EOL
+
+# テーブルの不要レコード数、統計情報更新日時の表示
 echo "$(date +"%Y/%m/%d %H:%M:%S")" "[${HOST_NAME}] SELECT * FROM pg_stat_user_tables;" 2>&1 | tee -a "${LOG}"
 psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} << EOL  2>&1 | tee -a "${LOG}"
   \x
