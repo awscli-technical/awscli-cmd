@@ -18,3 +18,15 @@ psql -h localhost -p 5432 -d test_db01 -U postgres
 
 export PGPASSWORD='P@ssw0rd'
 psql -h localhost -p 5432 -d test_db01 -U test_user01_r
+
+#-------------------------------------------------
+# クエリ(特定テーブルインデックス再構築(REINDEX))
+#-------------------------------------------------
+QUERY_DESC_REINDEX_TBL="特定テーブルインデックス再構築(REINDEX)"
+SQL_REINDEX_TBL="\"REINDEX (VERBOSE) TABLE CONCURRENTLY ${DB_SCHEMA}.${DB_TABLE};\""
+# SQL_REINDEX_TBL="\"REINDEX ${DB_SCHEMA}.${DB_TABLE};\""
+QUERY_REINDEX_TBL="${DB_CONNECT}${SQL_REINDEX_TBL}"
+
+REINDEX (VERBOSE) TABLE CONCURRENTLY test_schema01.test_table02;
+REINDEX (VERBOSE) DATABASE CONCURRENTLY test_db01;
+
