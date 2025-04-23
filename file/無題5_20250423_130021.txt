@@ -1,0 +1,517 @@
+■【Linux】Systemwalker Operation Managerの起動停止
+
+cat /etc/redhat-release
+Red Hat Enterprise Linux release 9.5 (Plow)
+
+/opt/FJSVftlo/bin/swpkginfo
+*************************************************
+Systemwalker Operation Manager Information
+*************************************************
+PRODUCTNAME   : Systemwalker Operation Manager Standard Edition (64bit)
+VERSION       : V17.0.1
+VENDER        : COPYRIGHT FUJITSU LIMITED 1995-2022
+CODE          : UTF-8
+INSTALLDATE   : 2025.03.20
+PLATFORM      : Linux
+INSTALLCLASS  : Server
+INSTALLPATH   : /opt
+                /etc/opt
+                /var/opt
+
+全てrootユーザーにて実施します。
+ls -l /opt/FJSVftlo/bin/swpkginfo
+-r-xr-x--- 1 root sys 27711  7月 11  2022 /opt/FJSVftlo/bin/swpkginfo
+ls -l /opt/systemwalker/bin/soperationmgr
+lrwxrwxrwx 1 root root 34  3月 20 14:33 /opt/systemwalker/bin/soperationmgr -> /opt/FJSVftlo/daemon/soperationmgr
+ls -l /opt/systemwalker/bin/mppviewo
+lrwxrwxrwx 1 root root 30  3月 20 14:33 /opt/systemwalker/bin/mppviewo -> /opt/FJSVftlo/pmon/bin/mppview
+ls -l /opt/systemwalker/bin/poperationmgr
+lrwxrwxrwx 1 root root 34  3月 20 14:33 /opt/systemwalker/bin/poperationmgr -> /opt/FJSVftlo/daemon/poperationmgr
+
+サービス起動
+/opt/systemwalker/bin/soperationmgr
+/opt/systemwalker/bin/soperationmgr start...
+component start : sh /opt/systemwalker/bin/rc.mpfwsec start
+component started normally:  /opt/systemwalker/bin/rc.mpfwsec
+component start : sh /opt/FJSVJMCMN/etc/rc0.d/stsjmcmn
+component start : sh /opt/FJSVJMCMN/etc/rc3.d/start_jmcmn
+component start : sh /opt/FJSVJMCMN/etc/rc0.d/stsjmcmn
+component started normally:  /opt/FJSVJMCMN/etc/rc3.d/start_jmcmn
+component start : sh /opt/FJSVjmcal/bin/S99JMCAL
+component started normally:  /opt/FJSVjmcal/bin/S99JMCAL
+component start : sh /etc/opt/FJSVMJS/etc/rc3.d/S99MJS
+component started normally:  /etc/opt/FJSVMJS/etc/rc3.d/S99MJS
+component start : sh /opt/FJSVJOBSC/etc/rc0.d/stsjobsc
+component start : sh /opt/FJSVJOBSC/etc/rc3.d/start_jobs
+component start : sh /opt/FJSVJOBSC/etc/rc0.d/stsjobsc
+component started normally:  /opt/FJSVJOBSC/etc/rc3.d/start_jobs
+component start : sh /opt/FJSVftlo/pmon/bin/strmppmon.sh
+component started normally:  /opt/FJSVftlo/pmon/bin/strmppmon.sh
+/opt/systemwalker/bin/soperationmgr normal end.
+
+サービスが起動したことを確認
+/opt/systemwalker/bin/mppviewo
+####################### PROCESS INFORMATION BEGIN #######################
+** Package Name **
+ PROCESS-NAME                                 PID     RUNNING-TIME
+
+*************************************************************************
+** BASE: Security                                                      **
+*************************************************************************
+** FJSVfwseo **
+  MpFwsec                                     787256  00:00:00
+
+*************************************************************************
+** OMGR: Systemwalker Operation Manager                                **
+*************************************************************************
+** FJSVjmcal **
+  f3crhcs2                                    787869  00:00:00
+** FJSVJMCMN **
+  jmnetsv                                     787307  00:00:00
+  mpjmsrv                                     787308  00:00:00
+  java                                        787573  00:00:07
+  httpd                                       787697  00:00:00
+** FJSVJOBSC **
+ [Subsystem0]
+  tskmnsrv - sys 0                            788035  00:00:00
+** FJSVMJS **
+ [Subsystem0]
+  mjsdaemon - sys 0                           787915  00:00:00
+  mjsdaemon - sys 0                           787960  00:00:00
+  mjsdaemon - sys 0                           787961  00:00:00
+  mjsnetsv - sys 0                            787962  00:00:00
+
+######################## PROCESS INFORMATION END ########################
+
+サービス停止
+/opt/systemwalker/bin/poperationmgr
+/opt/systemwalker/bin/poperationmgr start...
+component start : sh /opt/FJSVftlo/pmon/bin/stpmppmon.sh
+component stopped normally:  /opt/FJSVftlo/pmon/bin/stpmppmon.sh
+component start : sh /opt/FJSVJOBSC/etc/rc0.d/stsjobsc
+component start : sh /opt/FJSVJOBSC/etc/rc0.d/end_jobs
+component start : sh /opt/FJSVJOBSC/etc/rc0.d/stsjobsc
+component stopped normally:  /opt/FJSVJOBSC/etc/rc0.d/end_jobs
+component start : sh /etc/opt/FJSVMJS/etc/rc0.d/K00MJS
+component stopped normally:  /etc/opt/FJSVMJS/etc/rc0.d/K00MJS
+component start : sh /opt/FJSVjmcal/bin/K00JMCAL
+component stopped normally:  /opt/FJSVjmcal/bin/K00JMCAL
+component start : sh /opt/FJSVJMCMN/etc/rc0.d/stsjmcmn
+component start : sh /opt/FJSVJMCMN/etc/rc0.d/end_jmcmn
+component start : sh /opt/FJSVJMCMN/etc/rc0.d/stsjmcmn
+component stopped normally:  /opt/FJSVJMCMN/etc/rc0.d/end_jmcmn
+component start : sh /opt/systemwalker/bin/rc.mpfwsec stop
+component stopped normally:  /opt/systemwalker/bin/rc.mpfwsec
+/opt/systemwalker/bin/poperationmgr end.
+
+サービスが停止したことを確認
+全てERROR:Process NOT Found!!と表示されていれば、停止しています。
+/opt/systemwalker/bin/mppviewo
+####################### PROCESS INFORMATION BEGIN #######################
+** Package Name **
+ PROCESS-NAME                                 PID     RUNNING-TIME
+
+*************************************************************************
+** BASE: Security                                                      **
+*************************************************************************
+** FJSVfwseo **
+ >>>>> ERROR:Process NOT Found!! : MpFwsec
+
+*************************************************************************
+** OMGR: Systemwalker Operation Manager                                **
+*************************************************************************
+** FJSVjmcal **
+** FJSVJMCMN **
+ >>>>> ERROR:Process NOT Found!! : jmnetsv
+ >>>>> ERROR:Process NOT Found!! : mpjmsrv
+ >>>>> ERROR:Process NOT Found!! : java
+ >>>>> ERROR:Process NOT Found!! : httpd
+** FJSVJOBSC **
+** FJSVMJS **
+
+######################## PROCESS INFORMATION END ########################
+
+
+■【Linux】Systemwalker Operation Managerの自動起動設定方法
+
+自動起動設定
+OSが起動するのと同時にSystemwalker Operation Managerを起動させるようにします。
+/opt/FJSVftlo/bin/swstart
+
+サービスが起動したことを確認
+/opt/systemwalker/bin/mppviewo
+
+自動起動設定解除
+/opt/FJSVftlo/bin/swstop
+
+
+■ジョブスケジューラコマンド(印刷用)
+
+jobschprint 
+
+-n(-N):
+ジョブネットの現在の状態を出力します。
+jobschprint -n
+
+  Job Net Status List         date: 2025/04/23  time: 08:25
+
+User Name: root
+
+Project Name: PRJ-SKIP-JOB
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+OKwait    OKwait                   Wait        2025/04/23 23:00
+
+
+Project Name: PRJ-RMT-JOBNET
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+OK2net    OKremote_net             Wait
+OKremote  OKremote_net2            Wait
+
+
+Project Name: PRJ-GRP-ORG-MINI
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+jobnet12  jobnet12                 Wait
+jobnet13  jobnet13                 Wait
+jobnet11  jobnet11                 Wait
+jobnet10  jobnet10                 Wait        2025/04/23 11:00
+jobnet20  jobnet20                 Wait        2025/04/23 13:00
+jobnet30  jobnet30                 Wait        2025/04/23 14:00
+
+
+Project Name: PRJ-MSG-GRP-JOBNET
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+jobnet12  jobnet12                 Wait
+jobnet13  jobnet13                 Wait
+jobnet11  jobnet11                 Wait
+jobnet10  jobnet10                 Wait        2025/04/23 10:00
+jobnet20  jobnet20                 Wait        2025/04/23 13:00
+
+
+Project Name: PRJ-GRP-ORG
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+jobnet01  jobnet01                 Wait
+jobnet02  jobnet02                 Wait
+jobnet11  jobnet11                 Wait
+jobnet00  jobnet00                 Wait
+jobnet10  jobnet10                 Wait
+jobnet20  jobnet20                 Wait
+jobnet30  jobnet30                 Wait
+jobnet40  jobnet40                 Wait
+jobnet50  jobnet50                 Wait
+
+
+Project Name: PRJ-SKIP-JOBNET-CTRL
+
+Job Net   Job Net Comment          Status      Scheduled Time    Start Time        End Time         Completion Code
+
+branch_b  branch_bt0_rc0-9         Wait
+dummy00_  dummy00_bt0_rc0          Wait
+dummy01_  dummy01_rc0              Wait
+dummy02_  dummy02_rc0              Wait
+fwait_rc  fwait_rc0                Wait
+skip_bt2  skip_bt2-6_rc0           Wait
+skip_bt7  skip_bt7-9_rc0           Wait
+start_bt  start_bt0_rc0            Wait
+start_bt  start_bt1_rc0            Wait
+ctrl      ctrl                     Wait
+
+
+-e(-E):
+実行中のジョブの一覧を出力します。
+jobschprint -e
+MpJobsch: WARNING: 0082: 実行中のジョブは存在しません
+
+-p(-P):
+ジョブの現在の状態を出力します。
+jobschprint -p
+
+  Job Status List             date: 2025/04/23  time: 08:26
+
+User Name: root
+
+Project Name: PRJ-SKIP-JOB
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+OKwait   jobschchkfile -fwait /ro Wait
+         branch_auto.sh           Wait
+         start_rc0.sh             Wait
+         start_rc1.sh             Wait
+         rc1_dummy00.sh           Wait
+         rc0_dummy00.sh           Wait
+         rc0_dummy01.sh           Wait
+         echo "SKIP JOB"          Wait
+         rc1_dummy01.sh           Wait
+         echo "SKIP JOB"          Wait
+         rc1_dummy02.sh           Wait
+
+
+Project Name: PRJ-RMT-JOBNET
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+OK2net   mjrmtjob                 Wait
+OKremote /home/iac/swom_work/test Wait
+
+
+Project Name: PRJ-GRP-ORG-MINI
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+jobnet12 date                     Wait
+jobnet13 date                     Wait
+jobnet11 jobnet13                 Wait
+         jobnet12                 Wait
+jobnet10 jobnet11                 Wait
+jobnet20 date                     Wait
+jobnet30 date                     Wait
+
+
+Project Name: PRJ-MSG-GRP-JOBNET
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+jobnet12 date                     Wait
+         jobschmsgevent hello     Wait
+jobnet13 date                     Wait
+         jobschmsgevent world     Wait
+jobnet11 jobnet13                 Wait
+         jobnet12                 Wait
+jobnet10 jobnet11                 Wait
+jobnet20 date                     Wait
+
+
+Project Name: PRJ-GRP-ORG
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+jobnet01 date                     Wait
+jobnet02 date                     Wait
+jobnet11 date                     Wait
+jobnet00 date                     Wait
+         jobnet01                 Wait
+         jobnet02                 Wait
+jobnet10 jobnet11                 Wait
+jobnet20 date                     Wait
+jobnet30 date                     Wait
+jobnet40 date                     Wait
+jobnet50 date                     Wait
+
+
+Project Name: PRJ-SKIP-JOBNET-CTRL
+
+Job Net  Job Name                 Status     Start Time        End Time         Completion Code
+
+branch_b branch_auto.sh           Wait
+dummy00_ rc1_dummy00.sh           Wait
+dummy01_ rc1_dummy01.sh           Wait
+dummy02_ rc1_dummy02.sh           Wait
+fwait_rc jobschchkfile -fwait /ro Wait
+skip_bt2 echo "SKIP JOB"          Wait
+skip_bt7 echo "SKIP JOB"          Wait
+start_bt start_rc0.sh             Wait
+start_bt start_rc1.sh             Wait
+ctrl     fwait_rc0                Wait
+         branch_bt0_rc0-9         Wait
+         start_bt0_rc0            Wait
+         start_bt1_rc0            Wait
+         dummy00_bt0_rc0          Wait
+         rc0_dummy00.sh           Wait
+         rc0_dummy01.sh           Wait
+         skip_bt2-6_rc0           Wait
+         dummy01_rc0              Wait
+         skip_bt7-9_rc0           Wait
+         dummy02_rc0              Wait
+
+
+-w(-W):
+実行待ちのジョブの一覧を出力します。
+jobschprint -w
+
+  Job Net Wait List           date: 2025/04/23  time: 08:27
+
+User Name: root
+
+Project Name         Job Net  Job Net Comment          Job Name                 Scheduled Time
+
+PRJ-SKIP-JOB         OKwait   OKwait                   jobschchkfile -fwait /ro 2025/04/23 23:00
+                                                       branch_auto.sh           2025/04/23 23:00
+                                                       start_rc0.sh             2025/04/23 23:00
+                                                       start_rc1.sh             2025/04/23 23:00
+                                                       rc1_dummy00.sh           2025/04/23 23:00
+                                                       rc0_dummy00.sh           2025/04/23 23:00
+                                                       rc0_dummy01.sh           2025/04/23 23:00
+                                                       echo "SKIP JOB"          2025/04/23 23:00
+                                                       rc1_dummy01.sh           2025/04/23 23:00
+                                                       echo "SKIP JOB"          2025/04/23 23:00
+                                                       rc1_dummy02.sh           2025/04/23 23:00
+PRJ-RMT-JOBNET       OK2net   OKremote_net             mjrmtjob
+                     OKremote OKremote_net2            /home/iac/swom_work/test
+PRJ-GRP-ORG-MINI     jobnet12 jobnet12                 date
+                     jobnet13 jobnet13                 date
+                     jobnet11 jobnet11                 jobnet13
+                                                       jobnet12
+                     jobnet10 jobnet10                 jobnet11                 2025/04/23 11:00
+                     jobnet20 jobnet20                 date                     2025/04/23 13:00
+                     jobnet30 jobnet30                 date                     2025/04/23 14:00
+PRJ-MSG-GRP-JOBNET   jobnet12 jobnet12                 date
+                                                       jobschmsgevent hello
+                     jobnet13 jobnet13                 date
+                                                       jobschmsgevent world
+                     jobnet11 jobnet11                 jobnet13
+                                                       jobnet12
+                     jobnet10 jobnet10                 jobnet11                 2025/04/23 10:00
+                     jobnet20 jobnet20                 date                     2025/04/23 13:00
+PRJ-GRP-ORG          jobnet01 jobnet01                 date
+                     jobnet02 jobnet02                 date
+                     jobnet11 jobnet11                 date
+                     jobnet00 jobnet00                 date
+                                                       jobnet01
+                                                       jobnet02
+                     jobnet10 jobnet10                 jobnet11
+                     jobnet20 jobnet20                 date
+                     jobnet30 jobnet30                 date
+                     jobnet40 jobnet40                 date
+                     jobnet50 jobnet50                 date
+PRJ-SKIP-JOBNET-CTRL branch_b branch_bt0_rc0-9         branch_auto.sh
+                     dummy00_ dummy00_bt0_rc0          rc1_dummy00.sh
+                     dummy01_ dummy01_rc0              rc1_dummy01.sh
+                     dummy02_ dummy02_rc0              rc1_dummy02.sh
+                     fwait_rc fwait_rc0                jobschchkfile -fwait /ro
+                     skip_bt2 skip_bt2-6_rc0           echo "SKIP JOB"
+                     skip_bt7 skip_bt7-9_rc0           echo "SKIP JOB"
+                     start_bt start_bt0_rc0            start_rc0.sh
+                     start_bt start_bt1_rc0            start_rc1.sh
+                     ctrl     ctrl                     fwait_rc0
+                                                       branch_bt0_rc0-9
+                                                       start_bt0_rc0
+                                                       start_bt1_rc0
+                                                       dummy00_bt0_rc0
+                                                       rc0_dummy00.sh
+                                                       rc0_dummy01.sh
+                                                       skip_bt2-6_rc0
+                                                       dummy01_rc0
+                                                       skip_bt7-9_rc0
+                                                       dummy02_rc0
+
+
+-x(-X):
+グループの現在の状態を出力します。
+jobschprint -x
+
+  Group Status List           date: 2025/04/23  time: 08:27
+
+User Name: root
+
+Project Name: PRJ-MSG-GRP-JOBNET
+
+Group    Group Comment            Status   Scheduled Time    Start Time        End Time         Completion Code
+
+group10  group10                  Wait     2025/04/23 10:00
+
+
+Project Name: PRJ-GRP-ORG
+
+Group    Group Comment            Status   Scheduled Time    Start Time        End Time         Completion Code
+
+group00  group00                  Wait
+group10  group10                  Wait
+group50  group50                  Wait
+
+
+-y(-Y):
+グループ内のジョブネットの一覧を出力します。
+jobschprint -y
+
+  Group List                  date: 2025/04/23  time: 08:27
+
+User Name: root
+
+Project Name: PRJ-MSG-GRP-JOBNET
+
+Group    Job Net  Schedule Status      Start Time        End Time         Completion Code
+
+group10  jobnet10 Yes      Wait
+         jobnet20 Yes      Wait
+
+
+Project Name: PRJ-GRP-ORG
+
+Group    Job Net  Schedule Status      Start Time        End Time         Completion Code
+
+group00  jobnet00 No       Wait
+group10  jobnet10 No       Wait
+         jobnet20 No       Wait
+         jobnet30 No       Wait
+         jobnet40 No       Wait
+group50  jobnet50 No       Wait
+
+
+-b:
+起動日雛形名の一覧を出力します。
+jobschprint -b
+
+  Schedule Model List         date: 2025/04/23  time: 08:28
+
+Schedule Model: 平日月-金
+
+
+-c:
+日付設定の起動日雛形を出力します。
+jobschprint -c
+
+-d:
+曜日設定の起動日雛形を出力します。
+jobschprint -d
+
+-h:
+カレンダ情報を出力します。
+jobschprint -h
+
+
+-u:
+ジョブスケジューラの利用者情報を出力します。
+jobschprint -u
+
+  Jobsch User List            date: 2025/04/23  time: 08:28
+
+User Name             Client Name
+
+root                  ???(192.168.1.6)
+
+
+-v:
+カレンダ名の一覧を出力します。
+jobschprint -v
+
+  Holiday Calendar List       date: 2025/04/23  time: 08:28
+
+Calendar Name: SYSTEM_CALENDAR
+
+
+-o(-O):
+プロジェクトの一覧を出力します。
+jobschprint -o
+
+  Jobsch Project List         date: 2025/04/23  time: 08:28
+
+User Name: root
+
+Project Name          Access   Owner Name
+
+PRJ-SKIP-JOB          all      root
+PRJ-SKIP-JOBNET-CTRL  all      root
+PRJ-RMT-JOBNET        all      root
+PRJ-MSG-GRP-JOBNET    all      root
+PRJ-GRP-ORG           all      root
+PRJ-GRP-ORG-MINI      all      root
