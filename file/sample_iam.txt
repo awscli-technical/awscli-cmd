@@ -1,0 +1,179 @@
+
+cfn-gamma-dev-iam-role-snowflake-bc
+AmazonS3FullAccess
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::392051336358:user/syt01000-s"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "sts:ExternalId": "UW55719_SFCRole=5_qpDwUyO3FbJ8fmjouMwRDpGMVfI="
+                }
+            }
+        }
+    ]
+}
+
+test-iam-role-snowflake
+test-iam-policy-snowflake
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "*"
+        }
+    ]
+}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::392051336358:user/9qd01000-s"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "sts:ExternalId": "DM23255_SFCRole=3_ASwur0nhs3iOn7JmV9+B06bdH2Q="
+                }
+            }
+        }
+    ]
+}
+
+
+cfn-gamma-dev-s3-bucket-snowflake-bc-182399695386
+s3://cfn-gamma-dev-s3-bucket-snowflake-bc-182399695386/test_snowflake/product/product.csv
+
+
+
+
+cfn-gamma-dev-s3-bucket-snowflake-182399695386
+s3://cfn-gamma-dev-s3-bucket-snowflake-182399695386/test_snowflake/product/product.csv
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::182399695386:role/test-iam-role-snowflake"
+            },
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::cfn-gamma-dev-s3-bucket-snowflake-182399695386",
+                "arn:aws:s3:::cfn-gamma-dev-s3-bucket-snowflake-182399695386/*"
+            ]
+        }
+    ]
+}
+
+例
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<bucket>",
+                "arn:aws:s3:::<bucket>/*"
+            ]
+        }
+    ]
+}
+
+# 以下、必要に応じて最小権限を付与するようにする
+# `s3:GetBucketLocation`: バケットのリージョンを取得
+# `s3:GetObject`: オブジェクトの読み取り
+# `s3:GetObjectVersion`: オブジェクトのバージョン取得
+# `s3:ListBucket`: バケットの内容一覧取得
+# `s3:PutObject`: オブジェクトの書き込み
+# `s3:DeleteObject`: オブジェクトの削除
+
+信頼関係
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::182399695386:root"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+                "StringEquals": {
+                    "sts:ExternalId": "0000"
+                }
+            }
+        }
+    ]
+}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+      "AWS": "arn:aws:iam::<アカウントID>:root"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+} 
+
+# `<アカウントID>`: 自身のアカウントIDを入力（コンソール画面右上で確認可）
+
+▼S3バケットポリシーの設定
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::<アカウントID>:role/<ロール名>"
+            },
+            "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<バケット名>",
+                "arn:aws:s3:::<バケット名>/*"
+            ]
+        }
+    ]
+}
+
+# `<アカウントID>`: 自身のアカウントIDを入力（コンソール画面右上で確認可）
+# `<ロール名>`: 2-3で作成したロール名を入力
+# `<バケット名>`: 2-1で作成したバケット名を入力 
+
+
+
+
+
+
+
+
+
