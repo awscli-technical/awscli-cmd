@@ -171,9 +171,22 @@ s3://cfn-gamma-dev-s3-bucket-snowflake-182399695386/test_snowflake/product/produ
 
 
 
-
-
-
-
-
-
+aws ec2 describe-images \
+  --region ap-northeast-1 \
+  --owners amazon \
+  --filters "Name=platform,Values=windows" \
+            "Name=name,Values=Windows_Server-*-Japanese-*-Base-*" \
+  --query "sort_by(Images, &Name)[].[ImageId, Name]" \
+  --output text
+ami-04bb98dc9ce984889   Windows_Server-2016-Japanese-Full-Base-2025.03.12
+ami-078c926a825c466c9   Windows_Server-2016-Japanese-Full-Base-2025.04.09
+ami-0cc24838e1fb2d269   Windows_Server-2016-Japanese-Full-Base-2025.05.15
+ami-028a21172be6f0723   Windows_Server-2019-Japanese-Full-Base-2025.03.12
+ami-0b73aaccb46be22a3   Windows_Server-2019-Japanese-Full-Base-2025.04.09
+ami-03e6f4e1046964e22   Windows_Server-2019-Japanese-Full-Base-2025.05.15
+ami-0c5f7ae474477733d   Windows_Server-2022-Japanese-Full-Base-2025.03.12
+ami-0a8695921de0ed4f6   Windows_Server-2022-Japanese-Full-Base-2025.04.09
+ami-0ef0aaa0b374c1206   Windows_Server-2022-Japanese-Full-Base-2025.05.15
+ami-056bc012e638ed630   Windows_Server-2025-Japanese-Full-Base-2025.03.12
+ami-041265d23fd7eaf09   Windows_Server-2025-Japanese-Full-Base-2025.04.09
+ami-09f374e94cc2615d3   Windows_Server-2025-Japanese-Full-Base-2025.05.15
