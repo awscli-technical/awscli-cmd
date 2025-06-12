@@ -190,3 +190,28 @@ ami-0ef0aaa0b374c1206   Windows_Server-2022-Japanese-Full-Base-2025.05.15
 ami-056bc012e638ed630   Windows_Server-2025-Japanese-Full-Base-2025.03.12
 ami-041265d23fd7eaf09   Windows_Server-2025-Japanese-Full-Base-2025.04.09
 ami-09f374e94cc2615d3   Windows_Server-2025-Japanese-Full-Base-2025.05.15
+
+
+                LaunchTemplateName: !Sub ${Iac}-${System}-${Env}-LaunchTemplate-ec2-instance-imdsv2-${SubnetAZPublic0}-bastion-windowsserver2022
+
+
+    LaunchTemplateName:
+        Description: "Name of LaunchTemplate"
+        Type: String
+
+
+    #-------------------------------------------------
+    # Launch Template (Set IMDSv2)
+    #-------------------------------------------------
+    CfnEC2LaunchTemplate:
+        Type: AWS::EC2::LaunchTemplate
+        Properties:
+            LaunchTemplateName: !Ref LaunchTemplateName
+            LaunchTemplateData:
+                MetadataOptions:
+                    HttpTokens: required
+
+
+            LaunchTemplate:
+                LaunchTemplateId: !Ref CfnEC2LaunchTemplate
+                Version: !GetAtt CfnEC2LaunchTemplate.LatestVersionNumber
