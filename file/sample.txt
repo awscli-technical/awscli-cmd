@@ -1,17 +1,323 @@
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::392051336358:user/9qd01000-s"
-            },
-            "Action": "sts:AssumeRole",
-            "Condition": {
-                "StringEquals": {
-                    "sts:ExternalId": "DM23255_SFCRole=3_ASwur0nhs3iOn7JmV9+B06bdH2Q="
-                }
-            }
-        }
-    ]
-}
+AWSTemplateFormatVersion: 2010-09-09
+#===================================================================================================
+# Description: Templates for creating EC2 instance resources.
+#===================================================================================================
+#=====================================================================
+# Parameters
+#=====================================================================
+Parameters:
+    #-------------------------------------------------
+    # Common parameters
+    #-------------------------------------------------
+    System:
+        Description: "System name"
+        Type: String
+
+    #-------------------------------------------------
+    # Subnet AZ parameters
+    #-------------------------------------------------
+    SubnetAZPublic0:
+        Description: "Subnet AZ"
+        Type: String
+
+    #-------------------------------------------------
+    # EC2 instance parameters
+    #-------------------------------------------------
+    EC2AMIRHEL9:
+        Description: "EC2 instance image"
+        Type: String
+
+    IPPublic0RHEL9:
+        Description: "Private IP address"
+        Type: String
+
+    InstanceType:
+        Description: "InstanceType"
+        Type: String
+
+    AssociatePublicIpAddress:
+        Description: "AssociatePublicIpAddress"
+        Type: String
+
+    VolumeSize:
+        Description: "VolumeSize"
+        Type: String
+
+    VolumeType:
+        Description: "VolumeType"
+        Type: String
+
+    EC2InstancePublic0BastionRHEL9:
+        Description: "EC2 instance name"
+        Type: String
+
+    LaunchTemplateName:
+        Description: "Name of LaunchTemplate"
+        Type: String
+
+#=====================================================================
+# Resources
+#=====================================================================
+Resources:
+    #-------------------------------------------------
+    # Launch Template (Set IMDSv2)
+    #-------------------------------------------------
+    CfnEC2LaunchTemplate:
+        Type: AWS::EC2::LaunchTemplate
+        Properties:
+            LaunchTemplateName: !Ref LaunchTemplateName
+            LaunchTemplateData:
+                MetadataOptions:
+                    HttpTokens: required
+
+    #-------------------------------------------------
+    # EC2 instance
+    #-------------------------------------------------
+    CfnEC2InstancePublic0BastionRHEL9:
+        Type: "AWS::EC2::Instance"
+        DeletionPolicy: Delete
+        Properties:
+            ImageId: !Ref EC2AMIRHEL9
+            InstanceType: !Ref InstanceType
+            KeyName: !ImportValue ExportCfnKeyPairIntegratedMasterId
+            AvailabilityZone: !Ref SubnetAZPublic0
+            Tenancy: "default"
+            NetworkInterfaces:
+                - AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
+                  DeviceIndex: "0"
+                  SubnetId: !ImportValue ExportCfnSubnetPublic0Id
+                  GroupSet:
+                      - !ImportValue ExportCfnSecurityGroupEC2Id
+                  PrivateIpAddress: !Ref IPPublic0RHEL9
+            EbsOptimized: false
+            SourceDestCheck: true
+            BlockDeviceMappings:
+                - DeviceName: "/dev/xvda"
+                  Ebs:
+                      Encrypted: false
+                      VolumeSize: !Ref VolumeSize
+                      VolumeType: !Ref VolumeType
+                      DeleteOnTermination: true
+            IamInstanceProfile: !ImportValue ExportCfnIAMInstanceProfileId
+            # Set IMDSv2
+            LaunchTemplate:
+                LaunchTemplateId: !Ref CfnEC2LaunchTemplate
+                Version: !GetAtt CfnEC2LaunchTemplate.LatestVersionNumber
+            Tags:
+                - Key: "System"
+                  Value: !Ref System
+                - Key: "Name"
+                  Value: !Ref EC2InstancePublic0BastionRHEL9
+                - Key: "Maintenance"
+                  Value: true
+                - Key: "Env"
+                  Value: dev
+            HibernationOptions:
+                Configured: false
+            EnclaveOptions:
+                Enabled: false
+            UserData:
+                Fn::Base64: |
+                    #!/bin/bash
+
+                    ## Update Packages
+                    #sudo dnf update -y
+
+                    ## Time zone (timedatectl status)
+                    sudo timedatectl set-timezone Asia/Tokyo
+
+                    ## locale (locale)
+                    sudo localectl set-locale LANG=ja_JP.UTF-8
+
+                    ## Add IaC user (sudo su -/su - iac/sudo ls)
+                    #MK_USER="iac"
+                    #MK_GROUP="iac"
+                    #MK_USER_ID="2001"
+                    #MK_GROUP_ID="2001"
+                    #sudo groupadd -g ${MK_GROUP_ID} ${MK_GROUP}
+                    #sudo useradd -s /usr/bin/bash -u ${MK_USER_ID} -g ${MK_GROUP} -m -d /home/${MK_USER} ${MK_USER}
+                    #sudo echo ${MK_USER} | passwd --stdin ${MK_USER}
+                    #sudo usermod -aG wheel ${MK_USER}
+                    #sudo echo "${MK_USER} ALL=NOPASSWD: ALL" >>/etc/sudoers
+
+                    ## /etc/bashrc (c)
+                    sudo cp -p /etc/bashrc /etc/bashrc.org
+                    sudo cat <<'EOL' >>/etc/bashrc
+                    alias ls='ls -aF'
+                    alias vi='vim -u NONE -N'
+                    alias ..='cd ..'
+                    alias c='clear'
+                    set -o vi
+                    export PS1="[\u@\h \t \w]\\$ "
+                    EOL
+
+                    ## tools (tree/jq/git --version)
+                    sudo dnf -y install tree jq git python3 wget
+
+                    ## nvm (nvm --version)
+                    #sudo su - ${MK_USER} -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash"
+                    #sudo su - ${MK_USER} -c ". ~/.nvm/nvm.sh"
+
+                    ## node (node -v)
+                    #sudo su - ${MK_USER} -c "nvm install v22"
+
+                    ## cdk (cdk --version)
+                    #sudo su - ${MK_USER} -c "npm install -g aws-cdk"
+
+                    ## typescript (tsc --version)
+                    #sudo su - ${MK_USER} -c "npm install -g typescript"
+
+                    ## SSM Agent (systemctl status amazon-ssm-agent)
+                    dnf install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+                    systemctl start amazon-ssm-agent
+                    systemctl enable amazon-ssm-agent
+
+                    ##Cloudwatch Agent (systemctl status amazon-cloudwatch-agent)
+                    #dnf -y install amazon-cloudwatch-agent
+                    #systemctl start amazon-cloudwatch-agent
+                    #systemctl enable amazon-cloudwatch-agent
+                    ## custom metrics
+                    #dnf -y install collectd
+                    #systemctl start collectd
+                    #systemctl enable collectd
+
+                    ##rsyslog (systemctl status rsyslog)
+                    #dnf -y install rsyslog
+                    #systemctl start rsyslog
+                    #systemctl enable rsyslog
+
+                    ##SELinux (getenforce)
+                    #sed -i -e "s/^SELINUX=permissive$/SELINUX=disabled/g" /etc/selinux/config
+                    grubby --update-kernel ALL --args selinux=0
+
+                    ##cronie (systemctl status crond)
+                    #dnf -y install cronie
+                    #systemctl start crond
+                    #systemctl enable crond
+
+                    ##logrotate
+                    #cp -p /etc/logrotate.conf /etc/logrotate.conf.org
+                    #tee /etc/logrotate.d/rsyslog<<'EOF'>/dev/null
+                    #/var/log/cron
+                    #/var/log/maillog
+                    #/var/log/messages
+                    #/var/log/secure
+                    #/var/log/spooler
+                    #{
+                    #    rotate 12
+                    #    weekly
+                    #    missingok
+                    #    compress
+                    #    notifempty
+                    #    dateext
+                    #    sharedscripts
+                    #    postrotate
+                    #        /usr/bin/systemctl kill -s HUP rsyslog.service >/dev/null 2>&1 || true
+                    #    endscript
+                    #}
+                    #EOF
+
+                    ## docker (docker -v)
+                    #sudo dnf install -y docker
+                    #sudo systemctl start docker
+                    #sudo gpasswd -a ${MK_USER} docker
+                    #sudo chgrp docker /var/run/docker.sock
+                    #sudo service docker restart
+                    #sudo systemctl enable docker
+
+                    ## docker-compose (docker-compose -v)
+                    #sudo curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                    #sudo chmod +x /usr/local/bin/docker-compose
+                    #sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+                    ## PostgreSQL (psql --version)
+                    sudo dnf -y install postgresql16.x86_64
+
+                    ## Public IP Address
+                    #PUBLIC_IP=`ec2-metadata |grep public-ipv4 |head -n 1 |awk '{print $2}'`
+                    #export PUBLIC_IP
+
+                    ## Create SSL Certificate
+                    #sudo mkdir -p /etc/pki/tls/certs
+                    #sudo openssl req -x509 -nodes -newkey rsa:2048 -keyout /etc/pki/tls/certs/vsftpd.pem \
+                    #-out /etc/pki/tls/certs/vsftpd.pem -days 3650 \
+                    #-subj "/C=JP/ST=Saitama/L=Saitama/O=TMKY/OU=TMKY/CN=${PUBLIC_IP}/emailAddress=takashi.nagai@tmky.jp"
+                    #sudo chmod 600 vsftpd.pem
+
+                    ## Install vsftpd
+                    #sudo dnf -y install vsftpd
+                    #sudo systemctl start vsftpd
+                    #sudo systemctl enable vsftpd
+
+                    ## Configuring vsftpd.conf
+                    #sudo cp /etc/vsftpd/vsftpd.conf /etc/vsftpd/vsftpd.conf.org
+                    #sudo sed -i -e "s/listen=NO/listen=YES/" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "s/listen_ipv6=YES/listen_ipv6=NO/" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a # The following additional settings" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a # Passive mode connection settings" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a pasv_address=${PUBLIC_IP}" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a pasv_enable=YES" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a pasv_addr_resolve=YES" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a pasv_min_port=60001" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a pasv_max_port=60010" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a # Change Listen Port" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a listen_port=10021" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a # Encrypted communication settings" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a rsa_cert_file=/etc/pki/tls/certs/vsftpd.pem" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a ssl_enable=YES" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a force_local_data_ssl=YES" /etc/vsftpd/vsftpd.conf
+                    #sudo sed -i -e "$ a force_local_logins_ssl=YES" /etc/vsftpd/vsftpd.conf
+                    #sudo systemctl restart vsftpd
+
+                    ## Create FTP user
+                    #while read USER GROUP USER_ID GROUP_ID PASSWD; do
+
+                    #    echo USER GROUP USER_ID GROUP_ID PASSWD : ${USER} ${GROUP} ${USER_ID} ${GROUP_ID} ${PASSWD}
+
+                    #    sudo cat /etc/group |grep ${GROUP} > /dev/null 2>&1
+                    #    RC=`echo $?`
+                    #    if [ $RC -eq 1 ];then
+                    #        sudo groupadd -g ${GROUP_ID} ${GROUP}
+                    #        echo MKGROUP!!!!!!!!!!!
+                    #    fi
+
+                    #    sudo cat /etc/passwd |grep ${USER} > /dev/null 2>&1
+                    #    RC=`echo $?`
+                    #    if [ $RC -eq 1 ];then
+                    #        sudo useradd -s /usr/bin/bash -u ${USER_ID} -g ${GROUP} -m -d /home/${USER} ${USER}
+                    #        sudo echo ${PASSWD} | passwd --stdin ${USER}
+                    #        sudo usermod -aG wheel ${USER}
+                    #        sudo echo "${USER} ALL=NOPASSWD: ALL" >>/etc/sudoers
+                    #        echo MKUSER!!!!!!!!!!!
+                    #    fi
+                    #done <<EOL
+                    #ftpuser00 ftpgroup00 4000 4000 password
+                    #ftpuser01 ftpgroup00 4001 4000 password
+                    #ftpuser02 ftpgroup00 4002 4000 password
+                    #EOL
+
+                    ## EFS Utility
+                    #sudo dnf install -y amazon-efs-utils
+                    #sudo mkdir -p /efs-test
+
+                    ## Run Command(TEST)
+                    #sudo mkdir -p /root/work/script
+                    #sudo tee /root/work/script/test1.sh<<'EOF'>/dev/null
+                    ##!/bin/bash
+                    #sleep 120
+                    #date
+                    #echo "Hello world."
+                    #EOF
+                    #sudo chmod u+x /root/work/script/test1.sh
+
+#=====================================================================
+# Outputs
+#=====================================================================
+Outputs:
+    # ------------------------------------------------------------#
+    # EC2 Instance
+    # ------------------------------------------------------------#
+    ExportCfnEC2InstancePublic0BastionRHEL9Id:
+        Value: !Ref CfnEC2InstancePublic0BastionRHEL9
+        Export:
+            Name: ExportCfnEC2InstancePublic0BastionRHEL9Id
