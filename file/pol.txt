@@ -1,0 +1,272 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EC2InstanceDisplay",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:Describe*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2InstanceLogin",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:StartSession",
+                "ssm:DescribeSessions",
+                "ssm:TerminateSession"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "Null": {
+                    "ec2:ResourceTag/Feature": "false"
+                },
+                "StringEqualsIfExists": {
+                    "ec2:ResourceTag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "EC2InstanceLogin2",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:StartSession",
+                "ssm:GetDocument",
+                "ssm:SendCommand"
+            ],
+            "Resource": [
+                "arn:aws:ec2:ap-northeast-1:182399695386:instance/i-0ddd67274d2c66441",
+                "arn:aws:ssm:*:*:managed-instance/*",
+                "arn:aws:ssm:*:*:document/SSM-SessionManagerRunShell",
+                "arn:aws:ssm:*:*:document/AWS-StartPortForwardingSession",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetDiskInformation",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetFileContent",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetFileSystemContent",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetGroups",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetPerformanceCounters",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetProcessDetails",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetUsers",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetWindowsEvents",
+                "arn:aws:ssm:*:*:document/AWSFleetManager-GetWindowsRegistryContent"
+            ]
+        },
+        {
+            "Sid": "EC2InstanceLogin3",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetConnectionStatus",
+                "ssm:DescribeInstanceAssociationsStatus",
+                "ssm:DescribeInstancePatches",
+                "ssm:DescribeInstancePatchStates",
+                "ssm:DescribeInstanceProperties",
+                "ssm:GetCommandInvocation",
+                "ssm:GetServiceSetting",
+                "ssm:GetInventorySchema",
+                "ssm:ListComplianceItems",
+                "ssm:ListInventoryEntries",
+                "ssm:ListTagsForResource",
+                "ssm:ListCommandInvocations",
+                "ssm:ListAssociations",
+                "ssm-guiconnect:*",
+                "ssmmessages:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2InstanceStopStart",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:StartInstances",
+                "ec2:StopInstances",
+                "ec2:RebootInstances"
+            ],
+            "Resource": [
+                "arn:aws:ec2:ap-northeast-1:182399695386:instance/*"
+            ],
+            "Condition": {
+                "Null": {
+                    "ec2:ResourceTag/Feature": "false"
+                },
+                "StringEqualsIfExists": {
+                    "ec2:ResourceTag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "S3BucketDisplay",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "arn:aws:s3:::*"
+        },
+        {
+            "Sid": "S3BucketOperation",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::cfn-gamma-dev-s3-bucket-integrated-master-182399695386/*"
+            ]
+        },
+        {
+            "Sid": "S3BucketObjectDisplay",
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": "arn:aws:s3:::cfn-gamma-dev-s3-bucket-integrated-master-182399695386",
+            "Condition": {
+                "StringLike": {
+                    "s3:prefix": "*"
+                }
+            }
+        },
+        {
+            "Sid": "RDSViewResources",
+            "Effect": "Allow",
+            "Action": [
+                "rds:Describe*",
+                "rds:ListTagsForResource"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "RDSActions",
+            "Effect": "Allow",
+            "Action": [
+                "rds:StartDBInstance",
+                "rds:StopDBInstance",
+                "rds:RebootDBInstance"
+            ],
+            "Resource": "arn:aws:rds:ap-northeast-1:182399695386:db:cfn-gamma-dev-rds-database-instance",
+            "Condition": {
+                "StringEquals": {
+                    "rds:db-tag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "RDSActions2",
+            "Effect": "Allow",
+            "Action": [
+                "rds:ModifyDBInstance",
+                "rds:CreateDBSnapshot"
+            ],
+            "Resource": "arn:aws:rds:ap-northeast-1:182399695386:db:cfn-gamma-dev-rds-database-instance",
+            "Condition": {
+                "StringEquals": {
+                    "rds:db-tag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "AuroraViewResources",
+            "Effect": "Allow",
+            "Action": [
+                "rds:DescribeDBClusters",
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusterEndpoints",
+                "rds:DescribeDBClusterParameters",
+                "rds:ListTagsForResource"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "AuroraActions",
+            "Effect": "Allow",
+            "Action": [
+                "rds:StartDBCluster",
+                "rds:StopDBCluster",
+                "rds:ModifyDBCluster"
+            ],
+            "Resource": [
+                "arn:aws:rds:ap-northeast-1:182399695386:cluster:database-1",
+                "arn:aws:rds:ap-northeast-1:182399695386:db:database-1-instance-1"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "rds:cluster-tag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "AuroraActions2",
+            "Effect": "Allow",
+            "Action": [
+                "rds:RestoreDBClusterToPointInTime",
+                "rds:CreateDBClusterSnapshot"
+            ],
+            "Resource": [
+                "arn:aws:rds:ap-northeast-1:182399695386:cluster:database-1",
+                "arn:aws:rds:ap-northeast-1:182399695386:db:database-1-instance-1"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "rds:cluster-tag/Feature": "ims-poc"
+                }
+            }
+        },
+        {
+            "Sid": "AuroraRDSSSMSessionAccess",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:StartSession",
+                "ssm:SendCommand",
+                "ssm:DescribeInstanceInformation",
+                "ssm:DescribeInstanceProperties",
+                "ssm:TerminateSession",
+                "ssm:GetCommandInvocation"
+            ],
+            "Resource": [
+                "arn:aws:rds:ap-northeast-1:182399695386:db:cfn-gamma-dev-rds-database-instance",
+                "arn:aws:rds:ap-northeast-1:182399695386:cluster:database-1",
+                "arn:aws:rds:ap-northeast-1:182399695386:db:database-1-instance-1"
+            ]
+        },
+        {
+            "Sid": "AuroraRDSSSMSessionAccess2",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:UpdateInstanceInformation",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetCommandInvocation",
+                "ssm:ListCommands",
+                "ssm:ListCommandInvocations",
+                "ssm:SendCommand",
+                "ssm:CreateAssociation",
+                "ssm:DeleteAssociation",
+                "ssm:StartSession",
+                "ssm:TerminateSession",
+                "ssm:ResumeSession",
+                "ssm:DescribeSessions",
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+                "ec2messages:AcknowledgeMessage",
+                "ec2messages:DeleteMessage",
+                "ec2messages:FailMessage",
+                "ec2messages:GetEndpoint",
+                "ec2messages:GetMessages",
+                "ec2messages:SendReply"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "AuroraRDSSSMSessionAccess3",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
