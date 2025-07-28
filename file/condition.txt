@@ -22,3 +22,12 @@
     }
   ]
 }
+
+
+
+
+      "Condition": {
+        "StringNotEquals": {
+          "aws:SourceVpce": "vpce-xxxxxxxxxxxxxxxxx"
+        }
+      }
