@@ -1,0 +1,89 @@
+tee -a /etc/bashrc<<'EOF'>/dev/null
+・・・
+EOF
+
+./hoge.sh 2>&1 | tee -a hoge.log
+RC=${PIPESTATUS[0]}
+if [ RC -ne 0 ]; then
+    ・・・
+fi
+echo ${PIPESTATUS[@]}
+
+
+
+mkdir -p /tmp/maint/
+cd /tmp/maint/
+
+tee /tmp/maint/kakunin.sh<<'EOF'>/dev/null
+#!/bin/bash
+# ============================================
+# 環境変数
+# ============================================
+# スクリプト名
+SCRIPT_NAME=$(basename $0)
+# ホスト名
+HOST_NAME="$(uname -n)"
+# ログ
+LOG_DATE="$(date "+%Y%m%d-%H%M%S")"
+LOG_PATH="log"
+LOG="$(echo ${LOG_PATH}/${HOST_NAME}_${SCRIPT_NAME}_${LOG_DATE}.log)"
+
+# ============================================
+# 前処理
+# ============================================
+# --------------------------------------------
+# ログディレクトリ作成
+# --------------------------------------------
+if [ ! -d ${LOG_PATH} ]; then
+    echo "Directory not exists."
+    mkdir ./log
+fi
+
+# --------------------------------------------
+# 取得開始日時
+# --------------------------------------------
+echo Date : $(date) >${LOG}
+
+# ============================================
+# 主処理
+# ============================================
+# --------------------------------------------
+# 実行状態確認
+# --------------------------------------------
+while read -r line; do
+    echo '# --------------------------------------------' 2>&1 | tee -a "${LOG}"
+    echo '# '"${line}" 2>&1 | tee -a "${LOG}"
+    echo '# --------------------------------------------' 2>&1 | tee -a "${LOG}"
+    eval ${line} 2>&1 | tee -a "${LOG}"
+    echo 2>&1 | tee -a "${LOG}"
+done <<EOL
+id
+hostname
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
+sudo systemctl status amazon-ssm-agent
+EOL
+EOF
+
+bash /tmp/maint/kakunin.sh
+
+
+
+
+
+
+
+New-Item -ItemType Directory -Path "C:\tmp\maint" -Force
+
+Set-Location "C:\tmp\maint"
+
+New-Item -ItemType File -Name "testfile.ps1" -Force
+
+'Write-Output "Hello, world!"' | Out-File -FilePath "C:\tmp\maint\testfile.ps1" -Encoding UTF8
+'Write-Output "Another line"' | Out-File -FilePath "C:\tmp\maint\testfile.ps1" -Append -Encoding UTF8
+
+./testfile.ps1
+
+Remove-Item -Path "*" -Recurse -Force
+
+
+
