@@ -1,0 +1,91 @@
+■RDS 自動マイナーバージョンアップグレードの挙動
+
+・自動マイナーバージョンアップグレードは有効だが実際はマイナーバージョンアップグレードが起こらない事象
+→自動マイナーバージョンアップグレードが動作するには、以下のすべての条件を満たす必要があります。
+	自動マイナーバージョンアップグレードが有効
+	自動バックアップが有効（バックアップ保持期間 > 0）
+	現在のバージョンが自動アップグレードターゲットより低い
+
+・現在のアップグレードターゲットの確認方法
+→AWS CLIで現在のアップグレードターゲットを確認できます。
+	aws rds describe-db-engine-versions \
+	  --engine postgres \
+	  --engine-version 16.6 \
+	  --region ap-northeast-1 \
+	  --query "DBEngineVersions[*].ValidUpgradeTarget[*].{AutoUpgrade:AutoUpgrade,EngineVersion:EngineVersion}" \
+	  --output table
+	----------------------------------
+	|    DescribeDBEngineVersions    |
+	+--------------+-----------------+
+	|  AutoUpgrade |  EngineVersion  |
+	+--------------+-----------------+
+	|  False       |  8.0.43         |
+	|  True        |  8.0.44         |
+	|  False       |  8.0.45         |
+	|  False       |  8.4.3          |
+	|  False       |  8.4.4          |
+	|  False       |  8.4.5          |
+	|  False       |  8.4.6          |
+	|  False       |  8.4.7          |
+	|  False       |  8.4.8          |
+	+--------------+-----------------+
+	AutoUpgrade が true になっているバージョンが、自動アップグレードのターゲットです。
+	今回だと8.0.44にとなります。
+
+・Release Notes
+	PostgreSQL version 16.13 on Amazon RDS
+	https://docs.aws.amazon.com/AmazonRDS/latest/PostgreSQLReleaseNotes/postgresql-versions.html#postgresql-versions-version1613
+	https://www.postgresql.org/docs/release/16.13/
+
+・下位互換性
+マイナーバージョンのアップグレードに含まれるのは、既存のアプリケーションとの下位互換性がある変更のみです。
+
+・ダウンタイム
+アップグレードはマルチ AZ にしておいてもリードレプリカを用意しておいても同時にアップグレードが走るらしいのでダウンタイムが発生します。
+
+・考慮事項
+クラスター構成でない場合、自動でアップグレード前と後のスナップショットが取得されるため、事前にスナップショットを取得する必要はありません。
+戻しが発生した場合、自動で取得されたスナップショットから復元することが可能です。
+リードレプリカが存在する場合、リードレプリカ⇒マスターの順番でアップグレードする必要があります。
+ダウンタイムが発生する為、システムが稼働していない時間帯を見計って作業する必要があります。
+実は、「自動マイナーバージョンアップグレード」をOFFにしていても、
+重大なセキュリティ問題発生時やサポート終了バージョンの場合は強制的にアップグレードが適用されることがあります。
+
+
+OS アップデートを適用
+New Operating System update is available の適用は DB インスタンスの機能に影響ありませんが、適用する際にはインスタンスの停止が発生します。 
+OS アップデートを適用される際は予めご了承ください。
+Amazon RDS は、データベースパフォーマンスと顧客の全体的なセキュリティ体制改善のために、OS を新しいバージョンにアップグレードします。
+通常、アップデートには約 10 分かかります。
+アップデートは DB インスタンスの機能には影響しません。
+
+
+sh-5.2$ aws rds describe-db-engine-versions \
+  --engine postgres \
+  --engine-version 16.6 \
+  --region ap-northeast-1 \
+  --query "DBEngineVersions[*].ValidUpgradeTarget[*].{AutoUpgrade:AutoUpgrade,EngineVersion:EngineVersion}" \
+  --output table
+----------------------------------
+|    DescribeDBEngineVersions    |
++--------------+-----------------+
+|  AutoUpgrade |  EngineVersion  |
++--------------+-----------------+
+|  False       |  16.8           |
+|  False       |  16.9           |
+|  False       |  16.10          |
+|  False       |  16.11          |
+|  False       |  16.12          |
+|  False       |  16.13          |
+|  False       |  17.2           |
+|  False       |  17.4           |
+|  False       |  17.5           |
+|  False       |  17.6           |
+|  False       |  17.7           |
+|  False       |  17.8           |
+|  False       |  17.9           |
+|  False       |  18.1           |
+|  False       |  18.2           |
+|  False       |  18.3           |
++--------------+-----------------+
+sh-5.2$
