@@ -1,0 +1,98 @@
+RDS Performance Insights が 2025 年 11 月 30 日に CloudWatch Database Insights へ統合
+
+
+https://dev.classmethod.jp/articles/eol-performance-insights/
+
+昨年 12 月に CloudWatch Database Insights が発表されています。
+RDS/Aurora のパフォーマンスモニタリングの役割が CloudWatch Database Insights と Peformance Insights で重複しておりちょっと使い分けが難しいところがありましたね。
+さらに CloudWatch Database Insights を中心に機能追加がされていたりと、いずれ Performance Insights が取り込まれそうな雰囲気は出ていましたが、ついに来ましたね。
+
+RDS Performance Insights のダッシュボードや各機能が使えなくなるので、CloudWatch Database Insights のアドバンスドモードでしか提供されていない機能の場合は有料プランへ移行する必要があり、コストが増える可能性があります。
+
+CloudWatch Database Insights はすでに GA されており使うことが出来ます。
+そしてスタンダードモードは無料で、アドバンスドモードは有料で使うことが出来ます。
+
+まずは現行の運用が CloudWatch Databse Insights の スタンダードモードで運用できるのか確認してみてください。
+もしスタンダードモードで運用できそうであれば追加コストは不要です。
+
+
+
+
+https://qiita.com/emiki/items/a54e202b1b2bd4b4f88b
+
+RDS Performance Insights の CloudWatch Database Insights への統合が 2025 年 11 月 30 日から 2026 年 6 月 30 日に変更されました。
+
+2026/6/30 までに何をすればいいのか？
+
+CloudWatch Database Insights に移行する計画を立てていただければ良いです。
+
+Performance Insights の利用終了が 2025/11/30 に迫っています。
+今のうちから CloudWatch Databse Insights の利用を開始して、12 月にびっくりしないように備えておくとよいです。
+
+特に何も対応しない場合は、2025/11/30 以降に Database Insights スタンダードプラン（無料）の利用が開始され、画面が Database Insights にリダイレクトされるようになります。
+
+特に、ログの保存期間が固定になること、アドバンストプランにすると料金が今までより高くなることなどが多くの方に影響がある点かと思いますので、おさえておいてください。
+
+
+
+
+https://qiita.com/emiki/items/a54e202b1b2bd4b4f88b
+
+主要な変更点
+
+1.RDS コンソールの Performance Insights ダッシュボードが削除され、すべてのリンクが CloudWatch Database Insights ダッシュボードにリダイレクトされる
+何もしなければ勝手にスタンダードプラン（無料）の CloudWatch Database Insights に切り替わるということです。
+そこまで頻繁に Performance Insights を使っていなかった方であれば、意識しなくても問題ないと思っていただいて良いでしょう。
+
+2.RDS for Oracle と RDS for SQL Server の実行プランキャプチャ機能 (現在は Performance Insights の無料利用枠で利用可能) は、CloudWatch Database Insights のアドバンストモードに移行される
+つまり、RDS for Oracle と RDS for SQL Server の実行プランキャプチャ機能が有料になります
+
+3.Aurora PostgreSQL、Aurora MySQL、RDS for PostgreSQL のオンデマンド分析機能 (現在は Performance Insights の有料利用枠で利用可能) は、CloudWatch Database Insights のアドバンストモードに移行される
+
+4.Performance Insights のフレキシブルな保持期間 (1〜24か月) とその価格設定は廃止。
+Performance Insights の保持期間として 16 〜 24 か月を選択している場合、Database Insights のアドバンストモードにアップグレードしても、15 か月を超えるパフォーマンスデータの履歴にはアクセスできなくなる
+アドバンストモードではデータベースメトリクスの保持期間が 15 か月に固定
+スタンダードモードの保持期間は 7 日間で固定
+
+5.Performance Insights API は引き続き存在し、価格変更はなし。
+料金は CloudWatch Database Insights の請求として 請求書に表示される
+
+
+特に何も対応しない場合どうなるか
+
+特に何も対応しない場合は、2025/11/30 以降に Database Insights スタンダードプラン（無料）の利用が開始され、画面が Database Insights にリダイレクトされるようになります。
+
+
+
+
+https://cloud5.jp/saitou-rds-pi-to-dbi-checklist/
+
+■チェックリスト
+
+Performance InsightsからDatabase Insights移行に伴い、事前に確認しなければいけないことがいくつかあるかと思います。
+とりあえず最低限確認しておくべきことをチェックリストとして記載してみました。
+
+1.Performance Insightsコンソール利用有無
+2.Database Insightsのサポートエンジン
+3.Database Insightsのサポートクラス
+4.Database Insightsのサポートリージョン
+5.履歴保持期間が7日以上か
+6.権限(IAM)
+
+1. Performance Insightsコンソール利用有無
+Performance Insightsコンソール画面を日常運用で使っているか確認。使っている場合は、Database Insightsで同等のダッシュボードとアラームを再構築する計画を用意。
+
+2. Database Insightsのサポートエンジン
+対象DBエンジンがDatabase Insights対応か棚卸し。エンジン別の制限の有無も確認し、非対応・制限ありは代替策や更改方針を決定。
+
+3. Database Insightsのサポートクラス
+各インスタンスクラスの対応状況を確認。一部のt系micro/small等は非対応の場合があるため、クラス更改や監視方針の見直しを検討。
+
+4. Database Insightsのサポートリージョン
+運用中すべてのリージョンでDBIが利用可能か確認。DR用リージョンも含め、機能差・料金差がある場合は運用手順を分けて整理。
+
+5. 履歴保持期間が7日以上か
+業務要件として7日保持で十分かを判定。長期トレンドや実行計画が必要なら、Database Insights Advanced＋Performance Insights有効（15か月保持）を選択。
+
+6. 権限(IAM)
+運用ロールにCloudWatch／RDS／PI参照・設定権限が付与されているか確認。ダッシュボード更新やアラーム管理まで最小権限で付与。
