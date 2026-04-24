@@ -1,0 +1,64 @@
+容量
+
+sudo du -h --max-depth=1 /usr | sort -rh
+while true; do echo 'du -h --max-depth=1 /usr | sort -rh'; du -h --max-depth=1 /usr | sort -rh; sleep 3; echo; done
+
+
+使用量
+
+どのディレクトリが容量をくっているか
+du -sk /usr/*
+du -sm /usr/*
+du -sh /usr/*
+ du -sh /usr/*
+275M    /usr/bin
+0       /usr/games
+29M     /usr/include
+1.5G    /usr/lib
+1.3G    /usr/lib64
+276M    /usr/libexec
+8.0K    /usr/local
+76M     /usr/sbin
+1.7G    /usr/share
+218M    /usr/src
+0       /usr/tmp
+
+ディレクトリ・ファイルを使用量の大きい順に並べる
+確実な方法はキロバイトで取得してソートしてから表示を変える方法です：
+
+sudo du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, $2}'
+1.7G    /usr/share
+1.4G    /usr/lib
+1.3G    /usr/lib64
+0.3G    /usr/libexec
+0.3G    /usr/bin
+
+
+while true; do echo 'du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, \$2}''; du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, $2}'; sleep 3; echo; done
+
+while true; do date; echo 'df -hT'; df -hT; sleep 3; echo; done
+
+
+
+
+while true; do date; echo 'df -hT'; df -hT; echo; echo 'du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, \$2}''; du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, $2}'; sleep 3; echo '-----'; done
+
+
+
+
+tee /tmp/disk.sh<<'EOF'>/dev/null
+LOG=/tmp/`date "+%Y%m%d-%H%M%S"`_disk.log
+while true; do date; echo 'df -hT'; df -hT; echo; echo 'du -sk /usr/* | sort -nr | head -100 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, \$2}''; du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, $2}'; sleep 10; echo '-----'; done 2>&1 | tee -a ${LOG}
+EOF
+
+bash /tmp/disk.sh
+
+
+
+
+tee /tmp/disk.sh<<'EOF'>/dev/null
+LOG=/tmp/`date "+%Y%m%d-%H%M%S"`_disk.log
+while true; do date; echo 'df -hT'; df -hT; echo; echo 'du -h --max-depth=1 /usr | sort -rh'; du -h --max-depth=1 /usr | sort -rh; echo; echo 'du -sk /usr/* | sort -nr | head -100 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, \$2}''; du -sk /usr/* | sort -nr | head -5 | awk '{printf "%.1fG\t%s\n", $1/1024/1024, $2}'; sleep 10; echo '-----'; done 2>&1 | tee -a ${LOG}
+EOF
+
+bash /tmp/disk.sh
