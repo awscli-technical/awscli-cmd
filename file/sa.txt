@@ -1,0 +1,33 @@
+Secure Agent logs
+<install>\apps\agentcore\infaagent.log		エージェントの起動・停止情報
+
+<install>\apps\agentcore\agentcore.log		エージェントに関連する全アクティビティ(有効化されている全サービスの詳細を含む)
+
+<install>\apps\Data_Integration_Server\logs\tomcat\tomcat<version>.log		Data Integration ServerのTomcatプロセスに関する詳細。タスクの実行詳細(開始時刻、終了時刻、統計情報)、設計時・メタデータ関連の操作を記録
+
+<install>\apps\Data_Integration_Server\<version>\tomcat.out		Tomcatプロセスの基本情報(開始/停止時刻)。証明書・SSL関連の接続情報も含む
+
+
+<install>\apps\Data_Integration_Server\<version>\scripts.log		Data Integration Serverの実行スクリプトの情報。DISに問題がある場合に確認する
+
+
+タスク(ジョブ)実行時にエラーになる場合
+
+Session Log(セッションログ):<install>\apps\Data_Integration_Server\logs(タスクの実行詳細・成否)
+Error Files:<install>\apps\Data_Integration_Server\data\error — 失敗したレコードと理由
+Success Files:<install>\apps\Data_Integration_Server\data\success — 成功レコードの一覧
+
+
+ エージェント全体・各サービスの動作を見たいとき
+
+<install>\apps\agentcore\agentUpgrLog.txt(アップグレード履歴)
+<install>\apps\agentcore\consoleAgentManager.log(エージェント登録関連)
+<install>\apps\Administrator\logs\tomcat\tomcat.log(パッケージ事前ダウンロード関連)
+File Integration Service / Mass Ingestion Runtime / Process Server など、使っているサービスがあればそれぞれの個別ログ(前回お伝えした表を参照)
+
+
+
+
+
+
+
